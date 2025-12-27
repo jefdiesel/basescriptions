@@ -210,4 +210,57 @@ app.get('/recent', async (c) => {
   })
 })
 
+// POST /register - Register a new inscription immediately after tx
+app.post('/register', async (c) => {
+  try {
+    const body = await c.req.json()
+    const { content, creator, tx_hash, block_number } = body
+
+    if (!content || !creator || !tx_hash) {
+      return c.json({ error: 'Missing required fields' }, 400)
+    }
+
+    const hash = await sha256(content)
+    const db = getDb(c)
+
+    // Check if already exists
+    const { data: existing } = await db
+      .from('base_ethscriptions')
+      .select('id')
+      .eq('id', hash)
+      .single()
+
+    if (existing) {
+      return c.json({ error: 'Already registered', hash }, 409)
+    }
+
+    // Extract content type
+    let contentType = 'text/plain'
+    const match = content.match(/^data:([^,;]+)/)
+    if (match && match[1]) {
+      contentType = match[1]
+    }
+
+    // Insert
+    const { error } = await db.from('base_ethscriptions').insert({
+      id: hash,
+      content_uri: content,
+      content_type: contentType,
+      creator: creator.toLowerCase(),
+      current_owner: creator.toLowerCase(),
+      creation_tx: tx_hash.toLowerCase(),
+      creation_block: block_number || 0,
+      creation_timestamp: new Date().toISOString()
+    })
+
+    if (error) {
+      return c.json({ error: error.message }, 500)
+    }
+
+    return c.json({ success: true, hash })
+  } catch (e: any) {
+    return c.json({ error: e.message }, 500)
+  }
+})
+
 export default app

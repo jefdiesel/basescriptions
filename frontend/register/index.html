@@ -511,11 +511,26 @@
         });
 
         console.log('TX sent:', tx);
+
+        // Register in database immediately
+        try {
+          await fetch(`${API_BASE}/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              content: `data:,${currentName}`,
+              creator: account,
+              tx_hash: tx
+            })
+          });
+        } catch (e) {
+          console.log('DB register error (will be indexed later):', e);
+        }
+
         statusArea.innerHTML = `
           <div class="status-box success">
             <h3 style="color: var(--success)">✓ ${currentName} is yours!</h3>
             <p style="font-family: monospace; font-size: 12px; word-break: break-all; margin: 12px 0;">${tx}</p>
-            <p>Wait ~2 seconds for block confirmation</p>
             <p style="margin-top: 16px;">
               <a href="https://basescan.org/tx/${tx}" target="_blank">View on BaseScan →</a>
             </p>
