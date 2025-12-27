@@ -825,35 +825,70 @@
 
     // Register
     async function registerName(name) {
-      if (!address) {
-        alert('Please connect your wallet first');
+      if (!window.ethereum) {
+        alert('Please install a Web3 wallet');
         return;
       }
 
-      const content = `data:,${name}`;
-      const data = stringToHex(content);
-
       registerBtn.disabled = true;
-      registerBtn.textContent = 'Registering...';
+      registerBtn.textContent = 'Connecting...';
 
       try {
+        // Ensure wallet is connected
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if (!accounts || !accounts[0]) {
+          throw new Error('No account connected');
+        }
+        address = accounts[0];
+
+        // Switch to Base
+        registerBtn.textContent = 'Switching to Base...';
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x2105' }]
+          });
+        } catch (switchError) {
+          if (switchError.code === 4902) {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: '0x2105',
+                chainName: 'Base',
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                rpcUrls: ['https://mainnet.base.org'],
+                blockExplorerUrls: ['https://basescan.org']
+              }]
+            });
+          } else if (switchError.code !== 4001) {
+            throw switchError;
+          }
+        }
+
+        // Send transaction
+        registerBtn.textContent = 'Confirm in wallet...';
+        const content = `data:,${name}`;
+        const data = stringToHex(content);
+
         const txHash = await window.ethereum.request({
           method: 'eth_sendTransaction',
           params: [{
             from: address,
-            to: address, // Self-transfer
+            to: address,
             data: data,
             value: '0x0'
           }]
         });
 
         registerBtn.textContent = 'Registered!';
+        localStorage.setItem('connectedWallet', address);
+        connectBtn.textContent = address.slice(0, 6) + '...' + address.slice(-4);
         resultDetails.innerHTML += `<p><strong>TX:</strong> <a href="https://basescan.org/tx/${txHash}" target="_blank" style="color: var(--accent-blue)">${txHash.slice(0, 20)}...</a></p>`;
       } catch (error) {
         console.error(error);
         registerBtn.disabled = false;
         registerBtn.textContent = 'Register Now';
-        alert('Registration failed: ' + error.message);
+        alert('Registration failed: ' + (error.message || 'Unknown error'));
       }
     }
 
