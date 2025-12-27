@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload Site | Basescriptions</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --bg2: #141414;
+      --border: #2a2a2a;
+      --text: #e0e0e0;
+      --text2: #888;
+      --accent: #0052FF;
+      --success: #30E000;
+      --danger: #ff4444;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .container { max-width: 700px; margin: 0 auto; padding: 20px; }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 30px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    nav a { color: var(--text2); text-decoration: none; font-size: 14px; }
+    nav a:hover { color: var(--text); }
+
+    h1 { font-size: 2rem; text-align: center; margin-bottom: 24px; }
+
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .card h2 { font-size: 16px; margin-bottom: 4px; }
+    .card p { font-size: 14px; color: var(--text2); margin-bottom: 16px; }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-success { background: var(--success); color: #000; }
+    .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+
+    .verified-banner {
+      background: rgba(0, 82, 255, 0.1);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .verified-banner h3 { color: var(--accent); font-size: 18px; }
+    .verified-banner p { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+    .name-list {
+      max-height: 300px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .name-item {
+      padding: 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .name-item:hover { border-color: var(--accent); }
+    .name-item span { color: var(--text2); }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+    .search-input:focus { outline: none; border-color: var(--accent); }
+
+    .file-upload {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .file-upload:hover { border-color: var(--accent); }
+    .file-upload input { display: none; }
+
+    .file-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg);
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .tx-link {
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .routes-info { margin-bottom: 24px; }
+    .route-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 14px;
+    }
+    .route-row code { color: var(--accent); }
+    .route-row span { color: var(--text2); }
+
+    .step { display: none; }
+    .step.active { display: block; }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .success-box {
+      background: rgba(48, 224, 0, 0.1);
+      border: 1px solid var(--success);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+    }
+    .success-box h3 { color: var(--success); font-size: 24px; margin-bottom: 16px; }
+    .success-box a { color: var(--accent); text-decoration: none; display: block; margin-top: 16px; font-size: 18px; }
+
+    .error { color: var(--danger); font-size: 14px; margin-top: 12px; text-align: center; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="logo">
+        <div class="logo-icon">B</div>
+        <span>Basescriptions</span>
+      </a>
+      <nav>
+        <a href="/register/">Register Name</a>
+      </nav>
+    </header>
+
+    <h1>Upload Your Site</h1>
+
+    <!-- Step 1: Connect & Select Name -->
+    <div class="step active" id="step1">
+      <div class="card">
+        <h2>Connect Wallet</h2>
+        <p>Connect your wallet to see names you own on Base</p>
+        <button class="btn btn-primary" id="connectBtn">Connect Wallet</button>
+        <div class="error" id="connectError"></div>
+      </div>
+
+      <div class="card hidden" id="nameSelectCard">
+        <h2>Select a Name</h2>
+        <p id="nameCount">Select a name you own:</p>
+        <input type="text" class="search-input" id="nameSearch" placeholder="Search names..." />
+        <div class="name-list" id="nameList"></div>
+        <p style="text-align: center; margin-top: 16px;">
+          <a href="/register/" style="color: var(--accent); text-decoration: none;">Register a new name →</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- Step 2: Upload Content -->
+    <div class="step" id="step2">
+      <div class="verified-banner" id="verifiedBanner">
+        <h3 id="selectedName"></h3>
+        <p id="walletAddr"></p>
+        <a href="#" id="changeName" style="color: var(--text2); font-size: 12px;">← Choose different name</a>
+      </div>
+
+      <div class="card routes-info">
+        <h2>Your Site Routes</h2>
+        <div class="route-row"><code>/</code><span>Home page</span></div>
+        <div class="route-row"><code>/about</code><span>About page (optional)</span></div>
+      </div>
+
+      <!-- Home Upload -->
+      <div class="card" id="homeCard">
+        <h2>Home Page</h2>
+        <p id="homeRoute"></p>
+        <div id="homeUpload">
+          <div class="file-upload" id="homeDropzone">
+            <p style="color: var(--text2); margin-bottom: 8px;">Click to select HTML file</p>
+            <p style="font-size: 12px; color: var(--text2);">index.html, home.html</p>
+            <input type="file" id="homeFileInput" accept=".html,.htm" />
+          </div>
+        </div>
+        <div id="homeFileInfo" class="hidden"></div>
+        <div id="homeActions" class="hidden"></div>
+        <div id="homeSuccess" class="hidden"></div>
+      </div>
+
+      <!-- About Upload -->
+      <div class="card" id="aboutCard">
+        <h2>About Page (Optional)</h2>
+        <p id="aboutRoute"></p>
+        <div id="aboutUpload">
+          <div class="file-upload" id="aboutDropzone">
+            <p style="color: var(--text2); margin-bottom: 8px;">Click to select HTML file</p>
+            <p style="font-size: 12px; color: var(--text2);">Optional profile page</p>
+            <input type="file" id="aboutFileInput" accept=".html,.htm" />
+          </div>
+        </div>
+        <div id="aboutFileInfo" class="hidden"></div>
+        <div id="aboutActions" class="hidden"></div>
+        <div id="aboutSuccess" class="hidden"></div>
+      </div>
+
+      <!-- Manifest -->
+      <div class="card hidden" id="manifestCard">
+        <h2>Create Manifest</h2>
+        <p>Final step: inscribe your site manifest on Base. This links your routes to your content.</p>
+        <button class="btn btn-success" id="manifestBtn">Inscribe Manifest on Base</button>
+      </div>
+
+      <!-- Final Success -->
+      <div class="success-box hidden" id="finalSuccess">
+        <h3>✓ Site is Live!</h3>
+        <p style="font-family: monospace; font-size: 12px; word-break: break-all; color: var(--text2);" id="manifestTx"></p>
+        <a id="siteLink" href="#" target="_blank"></a>
+        <p style="margin-top: 24px;"><a href="/register/" style="color: var(--text2); font-size: 14px;">Register Another Name</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://basescriptions-api.wrapit.workers.dev';
+    const BASE_CHAIN_ID = '0x2105';
+
+    let wallet = null;
+    let ownedNames = [];
+    let selectedName = null;
+    let homeFile = null;
+    let aboutFile = null;
+    let homeTxHash = null;
+    let aboutTxHash = null;
+
+    // Check URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const nameParam = urlParams.get('name');
+
+    // Connect wallet
+    document.getElementById('connectBtn').addEventListener('click', connectWallet);
+
+    async function connectWallet() {
+      if (!window.ethereum) {
+        document.getElementById('connectError').textContent = 'Please install MetaMask';
+        return;
+      }
+
+      const btn = document.getElementById('connectBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span> Scanning...';
+
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        wallet = accounts[0].toLowerCase();
+
+        // Switch to Base
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: BASE_CHAIN_ID }]
+          });
+        } catch (e) {
+          if (e.code === 4902) {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: BASE_CHAIN_ID,
+                chainName: 'Base',
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                rpcUrls: ['https://mainnet.base.org'],
+                blockExplorerUrls: ['https://basescan.org']
+              }]
+            });
+          }
+        }
+
+        // Scan for owned names
+        await scanForNames();
+
+        if (nameParam && ownedNames.find(n => n.name.toLowerCase() === nameParam.toLowerCase())) {
+          selectName(nameParam);
+        }
+
+      } catch (e) {
+        document.getElementById('connectError').textContent = e.message;
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Connect Wallet';
+    }
+
+    async function scanForNames() {
+      try {
+        const res = await fetch(`${API_BASE}/owned/${wallet}?limit=100`);
+        const data = await res.json();
+
+        ownedNames = (data.ethscriptions || [])
+          .filter(e => e.content_uri?.startsWith('data:,'))
+          .map(e => ({
+            name: e.content_uri.replace('data:,', ''),
+            txHash: e.creation_tx,
+            block: e.creation_block
+          }))
+          .filter(n => /^[a-z0-9-]+$/.test(n.name) && n.name.length <= 32);
+
+        renderNameList();
+        document.getElementById('nameSelectCard').classList.remove('hidden');
+        document.getElementById('nameCount').textContent = `Select a name (${ownedNames.length} found):`;
+
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderNameList(filter = '') {
+      const list = document.getElementById('nameList');
+      const filtered = ownedNames.filter(n => !filter || n.name.includes(filter.toLowerCase()));
+
+      if (filtered.length === 0) {
+        list.innerHTML = '<p style="text-align: center; color: var(--text2); padding: 20px;">No names found</p>';
+        return;
+      }
+
+      list.innerHTML = filtered.map(n => `
+        <div class="name-item" onclick="selectName('${n.name}')">
+          <strong>${n.name}</strong><span>.basescriptions.com</span>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('nameSearch').addEventListener('input', (e) => {
+      renderNameList(e.target.value);
+    });
+
+    function selectName(name) {
+      selectedName = name;
+      document.getElementById('step1').classList.remove('active');
+      document.getElementById('step2').classList.add('active');
+      document.getElementById('selectedName').textContent = name + '.basescriptions.com';
+      document.getElementById('walletAddr').textContent = 'Owner: ' + wallet.slice(0, 6) + '...' + wallet.slice(-4);
+      document.getElementById('homeRoute').textContent = name + '.basescriptions.com/';
+      document.getElementById('aboutRoute').textContent = name + '.basescriptions.com/about';
+    }
+
+    document.getElementById('changeName').addEventListener('click', (e) => {
+      e.preventDefault();
+      selectedName = null;
+      homeFile = null;
+      aboutFile = null;
+      homeTxHash = null;
+      aboutTxHash = null;
+      document.getElementById('step2').classList.remove('active');
+      document.getElementById('step1').classList.add('active');
+      resetUploads();
+    });
+
+    function resetUploads() {
+      document.getElementById('homeUpload').classList.remove('hidden');
+      document.getElementById('homeFileInfo').classList.add('hidden');
+      document.getElementById('homeActions').classList.add('hidden');
+      document.getElementById('homeSuccess').classList.add('hidden');
+      document.getElementById('aboutUpload').classList.remove('hidden');
+      document.getElementById('aboutFileInfo').classList.add('hidden');
+      document.getElementById('aboutActions').classList.add('hidden');
+      document.getElementById('aboutSuccess').classList.add('hidden');
+      document.getElementById('manifestCard').classList.add('hidden');
+      document.getElementById('finalSuccess').classList.add('hidden');
+    }
+
+    // File uploads
+    function setupFileUpload(dropzoneId, inputId, fileInfoId, actionsId, successId, setFile, setTxHash, getTxHash) {
+      const dropzone = document.getElementById(dropzoneId);
+      const input = document.getElementById(inputId);
+      const fileInfo = document.getElementById(fileInfoId);
+      const actions = document.getElementById(actionsId);
+      const success = document.getElementById(successId);
+
+      dropzone.addEventListener('click', () => input.click());
+
+      input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const content = event.target.result;
+          setFile({ name: file.name, content, size: content.length });
+
+          dropzone.parentElement.classList.add('hidden');
+          fileInfo.classList.remove('hidden');
+          fileInfo.innerHTML = `
+            <div class="file-info">
+              <span>${file.name}</span>
+              <span style="color: var(--text2); font-size: 12px;">${(content.length / 1024).toFixed(1)} KB</span>
+            </div>
+          `;
+          actions.classList.remove('hidden');
+          actions.innerHTML = `
+            <div style="display: flex; gap: 12px;">
+              <button class="btn btn-secondary" style="flex: 0;" onclick="removeFile('${dropzoneId}', '${fileInfoId}', '${actionsId}')">Remove</button>
+              <button class="btn btn-primary" style="flex: 1;" id="${inputId}InscribeBtn">Inscribe on Base</button>
+            </div>
+          `;
+
+          document.getElementById(inputId + 'InscribeBtn').addEventListener('click', async () => {
+            await inscribeFile(setFile, setTxHash, getTxHash, inputId, successId, actionsId);
+          });
+        };
+        reader.readAsText(file);
+      });
+    }
+
+    function removeFile(dropzoneId, fileInfoId, actionsId) {
+      const file = dropzoneId.includes('home') ? 'home' : 'about';
+      if (file === 'home') homeFile = null;
+      else aboutFile = null;
+
+      document.getElementById(dropzoneId).parentElement.classList.remove('hidden');
+      document.getElementById(fileInfoId).classList.add('hidden');
+      document.getElementById(actionsId).classList.add('hidden');
+    }
+
+    async function inscribeFile(setFile, setTxHash, getTxHash, inputId, successId, actionsId) {
+      const btn = document.getElementById(inputId + 'InscribeBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span> Inscribing...';
+
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const file = inputId.includes('home') ? homeFile : aboutFile;
+
+        // Create data URI
+        const base64 = btoa(unescape(encodeURIComponent(file.content)));
+        const dataUri = `data:text/html;base64,${base64}`;
+        const hex = '0x' + Array.from(new TextEncoder().encode(dataUri))
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join('');
+
+        const tx = await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: accounts[0],
+            to: accounts[0],
+            data: hex,
+            value: '0x0'
+          }]
+        });
+
+        setTxHash(tx);
+        document.getElementById(actionsId).classList.add('hidden');
+        document.getElementById(successId).classList.remove('hidden');
+        document.getElementById(successId).innerHTML = `
+          <div style="display: flex; align-items: center; gap: 8px; color: var(--success);">
+            <span>✓</span>
+            <span>Inscribed on Base</span>
+          </div>
+          <a href="https://basescan.org/tx/${tx}" target="_blank" class="tx-link" style="display: block; margin-top: 8px;">${tx.slice(0, 20)}...</a>
+        `;
+
+        checkManifestReady();
+
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = 'Inscribe on Base';
+        alert(e.message);
+      }
+    }
+
+    setupFileUpload('homeDropzone', 'homeFileInput', 'homeFileInfo', 'homeActions', 'homeSuccess',
+      (f) => homeFile = f, (tx) => homeTxHash = tx, () => homeTxHash);
+
+    setupFileUpload('aboutDropzone', 'aboutFileInput', 'aboutFileInfo', 'aboutActions', 'aboutSuccess',
+      (f) => aboutFile = f, (tx) => aboutTxHash = tx, () => aboutTxHash);
+
+    function checkManifestReady() {
+      if (homeTxHash || aboutTxHash) {
+        document.getElementById('manifestCard').classList.remove('hidden');
+      }
+    }
+
+    // Manifest inscription
+    document.getElementById('manifestBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('manifestBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span> Inscribing manifest...';
+
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+        // Build manifest
+        const manifest = {
+          basescriptions: {
+            [selectedName]: {}
+          }
+        };
+
+        if (homeTxHash) manifest.basescriptions[selectedName].home = homeTxHash;
+        if (aboutTxHash) manifest.basescriptions[selectedName].about = aboutTxHash;
+
+        const json = JSON.stringify(manifest);
+        const dataUri = `data:application/json,${json}`;
+        const hex = '0x' + Array.from(new TextEncoder().encode(dataUri))
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join('');
+
+        const tx = await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: accounts[0],
+            to: accounts[0],
+            data: hex,
+            value: '0x0'
+          }]
+        });
+
+        // Show success
+        document.getElementById('manifestCard').classList.add('hidden');
+        document.getElementById('finalSuccess').classList.remove('hidden');
+        document.getElementById('manifestTx').textContent = tx;
+        document.getElementById('siteLink').href = `https://${selectedName}.basescriptions.com`;
+        document.getElementById('siteLink').textContent = `${selectedName}.basescriptions.com →`;
+
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = 'Inscribe Manifest on Base';
+        alert(e.message);
+      }
+    });
+
+    // Check for existing connection
+    if (window.ethereum) {
+      window.ethereum.request({ method: 'eth_accounts' }).then(accounts => {
+        if (accounts.length) {
+          wallet = accounts[0].toLowerCase();
+          scanForNames().then(() => {
+            document.getElementById('nameSelectCard').classList.remove('hidden');
+            if (nameParam) {
+              const match = ownedNames.find(n => n.name.toLowerCase() === nameParam.toLowerCase());
+              if (match) selectName(match.name);
+            }
+          });
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -6,7 +6,8 @@
   "scripts": {
     "index": "tsx scripts/indexer.ts",
     "backfill": "tsx scripts/backfill.ts",
-    "register": "tsx scripts/register.ts"
+    "register": "tsx scripts/register.ts",
+    "batch": "tsx scripts/batch-register.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

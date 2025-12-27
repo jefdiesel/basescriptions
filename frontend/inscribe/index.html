@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inscribe | Basescriptions</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --bg2: #141414;
+      --bg3: #1a1a1a;
+      --border: #2a2a2a;
+      --text: #e0e0e0;
+      --text2: #888;
+      --accent: #0052FF;
+      --success: #00ff88;
+      --danger: #ff4757;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 30px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #fff;
+    }
+
+    .connect-btn {
+      padding: 12px 24px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .connect-btn:hover { opacity: 0.9; }
+
+    .page-title {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .page-title h1 {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .page-title p {
+      color: var(--text2);
+      font-size: 16px;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      background: var(--bg2);
+      padding: 6px;
+      border-radius: 12px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 14px 16px;
+      background: transparent;
+      border: none;
+      color: var(--text2);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .tab:hover { color: var(--text); }
+
+    .tab.active {
+      background: var(--bg);
+      color: var(--accent);
+    }
+
+    /* Card */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      color: var(--text2);
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    textarea.form-input {
+      min-height: 200px;
+      resize: vertical;
+      font-family: monospace;
+    }
+
+    /* File Upload */
+    .file-upload {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .file-upload:hover {
+      border-color: var(--accent);
+    }
+
+    .file-upload.dragover {
+      border-color: var(--accent);
+      background: rgba(0, 82, 255, 0.1);
+    }
+
+    .file-upload-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .file-upload-text {
+      color: var(--text2);
+      margin-bottom: 8px;
+    }
+
+    .file-upload-hint {
+      color: var(--text2);
+      font-size: 12px;
+    }
+
+    .file-upload input {
+      display: none;
+    }
+
+    .file-preview {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .file-preview img,
+    .file-preview video {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 8px;
+    }
+
+    /* Size Info */
+    .size-info {
+      display: flex;
+      justify-content: space-between;
+      padding: 16px;
+      background: var(--bg);
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .size-info .label { color: var(--text2); }
+    .size-info .value { color: var(--accent); font-weight: 600; }
+    .size-info .value.warning { color: var(--danger); }
+
+    /* Button */
+    .btn {
+      width: 100%;
+      padding: 16px 24px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn:hover { opacity: 0.9; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-success {
+      background: var(--success);
+      color: #000;
+    }
+
+    /* Status */
+    .status {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .status.success {
+      display: block;
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid var(--success);
+      color: var(--success);
+    }
+
+    .status.error {
+      display: block;
+      background: rgba(255, 71, 87, 0.1);
+      border: 1px solid var(--danger);
+      color: var(--danger);
+    }
+
+    .status a {
+      color: inherit;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="logo">
+        <div class="logo-icon">B</div>
+        <span>Basescriptions</span>
+      </a>
+      <button class="connect-btn" id="connectBtn">Connect Wallet</button>
+    </header>
+
+    <div class="page-title">
+      <h1>Inscribe on Base</h1>
+      <p>Store content permanently onchain for ~$0.001</p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="text">Text</button>
+      <button class="tab" data-tab="image">Image</button>
+      <button class="tab" data-tab="html">HTML</button>
+      <button class="tab" data-tab="raw">Raw Data</button>
+    </div>
+
+    <div class="card">
+      <!-- Text Tab -->
+      <div class="tab-content active" id="tab-text">
+        <div class="form-group">
+          <label class="form-label">Content</label>
+          <input type="text" class="form-input" id="textInput" placeholder="Enter text to inscribe..." />
+        </div>
+        <div class="size-info">
+          <span class="label">Size</span>
+          <span class="value" id="textSize">0 B</span>
+        </div>
+      </div>
+
+      <!-- Image Tab -->
+      <div class="tab-content" id="tab-image">
+        <div class="file-upload" id="imageUpload">
+          <div class="file-upload-icon">🖼️</div>
+          <div class="file-upload-text">Drop image here or click to upload</div>
+          <div class="file-upload-hint">PNG, JPG, GIF, SVG, WebP (max ~100KB recommended)</div>
+          <input type="file" id="imageInput" accept="image/*" />
+        </div>
+        <div class="file-preview" id="imagePreview"></div>
+        <div class="size-info" style="margin-top: 20px;">
+          <span class="label">Size (base64)</span>
+          <span class="value" id="imageSize">0 B</span>
+        </div>
+      </div>
+
+      <!-- HTML Tab -->
+      <div class="tab-content" id="tab-html">
+        <div class="form-group">
+          <label class="form-label">HTML Content</label>
+          <textarea class="form-input" id="htmlInput" placeholder="<!DOCTYPE html>
+<html>
+<head><title>My Page</title></head>
+<body>
+  <h1>Hello World</h1>
+</body>
+</html>"></textarea>
+        </div>
+        <div class="size-info">
+          <span class="label">Size</span>
+          <span class="value" id="htmlSize">0 B</span>
+        </div>
+      </div>
+
+      <!-- Raw Tab -->
+      <div class="tab-content" id="tab-raw">
+        <div class="form-group">
+          <label class="form-label">Raw Data URI</label>
+          <textarea class="form-input" id="rawInput" placeholder="data:text/plain,Hello World
+or
+data:image/png;base64,iVBORw0KGgo..."></textarea>
+        </div>
+        <div class="size-info">
+          <span class="label">Size</span>
+          <span class="value" id="rawSize">0 B</span>
+        </div>
+      </div>
+
+      <button class="btn" id="inscribeBtn" onclick="inscribe()">Inscribe</button>
+
+      <div class="status" id="status"></div>
+    </div>
+  </div>
+
+  <script>
+    const BASE_CHAIN_ID = 8453;
+    let address = null;
+    let currentTab = 'text';
+    let fileData = null;
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+        currentTab = tab.dataset.tab;
+      });
+    });
+
+    // Connect wallet
+    document.getElementById('connectBtn').addEventListener('click', async () => {
+      if (!window.ethereum) {
+        alert('Please install MetaMask');
+        return;
+      }
+
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        address = accounts[0];
+
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x2105' }]
+          });
+        } catch (e) {
+          if (e.code === 4902) {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: '0x2105',
+                chainName: 'Base',
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                rpcUrls: ['https://mainnet.base.org'],
+                blockExplorerUrls: ['https://basescan.org']
+              }]
+            });
+          }
+        }
+
+        document.getElementById('connectBtn').textContent = address.slice(0, 6) + '...' + address.slice(-4);
+      } catch (e) {
+        console.error(e);
+      }
+    });
+
+    // Text input
+    document.getElementById('textInput').addEventListener('input', (e) => {
+      const content = `data:,${e.target.value}`;
+      document.getElementById('textSize').textContent = formatBytes(content.length);
+    });
+
+    // HTML input
+    document.getElementById('htmlInput').addEventListener('input', (e) => {
+      const content = `data:text/html,${encodeURIComponent(e.target.value)}`;
+      document.getElementById('htmlSize').textContent = formatBytes(content.length);
+    });
+
+    // Raw input
+    document.getElementById('rawInput').addEventListener('input', (e) => {
+      document.getElementById('rawSize').textContent = formatBytes(e.target.value.length);
+    });
+
+    // Image upload
+    const imageUpload = document.getElementById('imageUpload');
+    const imageInput = document.getElementById('imageInput');
+
+    imageUpload.addEventListener('click', () => imageInput.click());
+
+    imageUpload.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      imageUpload.classList.add('dragover');
+    });
+
+    imageUpload.addEventListener('dragleave', () => {
+      imageUpload.classList.remove('dragover');
+    });
+
+    imageUpload.addEventListener('drop', (e) => {
+      e.preventDefault();
+      imageUpload.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        handleImageFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    imageInput.addEventListener('change', (e) => {
+      if (e.target.files.length) {
+        handleImageFile(e.target.files[0]);
+      }
+    });
+
+    function handleImageFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        fileData = e.target.result;
+        document.getElementById('imagePreview').innerHTML = `<img src="${fileData}" />`;
+        document.getElementById('imageSize').textContent = formatBytes(fileData.length);
+        if (fileData.length > 100000) {
+          document.getElementById('imageSize').classList.add('warning');
+        } else {
+          document.getElementById('imageSize').classList.remove('warning');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Inscribe
+    async function inscribe() {
+      if (!address) {
+        alert('Please connect your wallet first');
+        return;
+      }
+
+      let content;
+
+      switch (currentTab) {
+        case 'text':
+          const text = document.getElementById('textInput').value;
+          if (!text) { alert('Enter text to inscribe'); return; }
+          content = `data:,${text}`;
+          break;
+
+        case 'image':
+          if (!fileData) { alert('Upload an image first'); return; }
+          content = fileData;
+          break;
+
+        case 'html':
+          const html = document.getElementById('htmlInput').value;
+          if (!html) { alert('Enter HTML content'); return; }
+          content = `data:text/html,${encodeURIComponent(html)}`;
+          break;
+
+        case 'raw':
+          content = document.getElementById('rawInput').value;
+          if (!content) { alert('Enter raw data'); return; }
+          break;
+      }
+
+      const btn = document.getElementById('inscribeBtn');
+      const status = document.getElementById('status');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span> Inscribing...';
+      status.className = 'status';
+      status.style.display = 'none';
+
+      try {
+        const data = stringToHex(content);
+
+        const txHash = await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: address,
+            to: address,
+            data: data,
+            value: '0x0'
+          }]
+        });
+
+        status.className = 'status success';
+        status.innerHTML = `
+          Success! Your inscription is being confirmed.<br>
+          <a href="https://basescan.org/tx/${txHash}" target="_blank">View on BaseScan</a> |
+          <a href="/view.html?tx=${txHash}">View Content</a>
+        `;
+        status.style.display = 'block';
+
+        btn.textContent = 'Inscribed!';
+        btn.classList.add('btn-success');
+
+      } catch (e) {
+        status.className = 'status error';
+        status.textContent = e.message;
+        status.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Inscribe';
+      }
+    }
+
+    function stringToHex(str) {
+      let hex = '0x';
+      for (let i = 0; i < str.length; i++) {
+        hex += str.charCodeAt(i).toString(16).padStart(2, '0');
+      }
+      return hex;
+    }
+
+    function formatBytes(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register Name | Basescriptions</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --bg2: #141414;
+      --border: #2a2a2a;
+      --text: #e0e0e0;
+      --text2: #888;
+      --accent: #0052FF;
+      --success: #30E000;
+      --danger: #ff4444;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    nav a {
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    nav a:hover { color: var(--text); }
+
+    h1 {
+      font-size: 2.5rem;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      text-align: center;
+      color: var(--text2);
+      margin-bottom: 40px;
+    }
+
+    .rules {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .rules h2 {
+      font-size: 12px;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    .rules ul { list-style: none; }
+    .rules li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text2);
+      margin-bottom: 8px;
+    }
+    .rules .check { color: var(--success); }
+    .rules .x { color: var(--danger); }
+    .rules code {
+      background: var(--bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: var(--accent);
+    }
+
+    .input-group {
+      display: flex;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .input-group:focus-within { border-color: var(--accent); }
+    .input-group input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 16px;
+      font-size: 18px;
+      color: var(--text);
+      outline: none;
+    }
+    .input-group span {
+      display: flex;
+      align-items: center;
+      padding-right: 16px;
+      color: var(--text2);
+      font-size: 14px;
+    }
+    .error-text {
+      color: var(--danger);
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary { background: var(--bg2); color: var(--text); border: 1px solid var(--border); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-success { background: var(--success); color: #000; }
+
+    .status-box {
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .status-box.available {
+      background: rgba(48, 224, 0, 0.1);
+      border: 1px solid var(--success);
+    }
+    .status-box.taken {
+      background: rgba(255, 68, 68, 0.1);
+      border: 1px solid var(--danger);
+    }
+    .status-box.success {
+      background: rgba(48, 224, 0, 0.1);
+      border: 1px solid var(--success);
+    }
+    .status-box h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    .status-box p {
+      font-size: 14px;
+      color: var(--text2);
+    }
+    .status-box code {
+      background: var(--bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .status-box a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hint {
+      font-size: 12px;
+      color: var(--text2);
+      text-align: center;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="logo">
+        <div class="logo-icon">B</div>
+        <span>Basescriptions</span>
+      </a>
+      <nav>
+        <a href="/upload/">Upload Site</a>
+      </nav>
+    </header>
+
+    <h1>Claim Your Name</h1>
+    <p class="subtitle">Register a permanent name on Base. First come, first served, forever.</p>
+
+    <div class="rules">
+      <h2>Name Rules</h2>
+      <ul>
+        <li><span class="check">✓</span> Lowercase letters, numbers, hyphens</li>
+        <li><span class="x">✗</span> No capitals, spaces, or special characters</li>
+        <li><span class="check">✓</span> 1-32 characters</li>
+        <li><span style="color:#555">→</span> Inscribed as <code>data:,yourname</code></li>
+      </ul>
+    </div>
+
+    <div class="input-group">
+      <input type="text" id="nameInput" placeholder="yourname" maxlength="32" />
+      <span>.basescriptions.com</span>
+    </div>
+    <div class="error-text" id="nameError"></div>
+
+    <div id="statusArea"></div>
+
+    <button class="btn btn-secondary" id="checkBtn" style="display:none;">Check Availability</button>
+    <button class="btn btn-primary" id="claimBtn" style="display:none;">Connect & Claim on Base</button>
+
+    <p class="hint" id="hint"></p>
+  </div>
+
+  <script>
+    const API_BASE = 'https://basescriptions-api.wrapit.workers.dev';
+    const BASE_CHAIN_ID = '0x2105';
+
+    const nameInput = document.getElementById('nameInput');
+    const nameError = document.getElementById('nameError');
+    const checkBtn = document.getElementById('checkBtn');
+    const claimBtn = document.getElementById('claimBtn');
+    const statusArea = document.getElementById('statusArea');
+    const hint = document.getElementById('hint');
+
+    let currentName = '';
+    let nameData = null;
+
+    // Validate name
+    function validateName(name) {
+      return /^[a-z0-9-]+$/.test(name) && name.length >= 1 && name.length <= 32;
+    }
+
+    nameInput.addEventListener('input', (e) => {
+      const name = e.target.value.toLowerCase().replace(/\s/g, '');
+      nameInput.value = name;
+      currentName = name;
+      nameData = null;
+      statusArea.innerHTML = '';
+      claimBtn.style.display = 'none';
+
+      if (!name) {
+        nameError.textContent = '';
+        checkBtn.style.display = 'none';
+        return;
+      }
+
+      if (!validateName(name)) {
+        nameError.textContent = 'Lowercase letters, numbers, and hyphens only.';
+        checkBtn.style.display = 'none';
+        return;
+      }
+
+      nameError.textContent = '';
+      checkBtn.style.display = 'block';
+    });
+
+    // Check availability
+    checkBtn.addEventListener('click', async () => {
+      if (!currentName || !validateName(currentName)) return;
+
+      checkBtn.disabled = true;
+      checkBtn.innerHTML = '<span class="loading"></span>';
+      statusArea.innerHTML = '';
+
+      try {
+        const res = await fetch(`${API_BASE}/name/${currentName}`);
+        nameData = await res.json();
+
+        if (nameData.available) {
+          statusArea.innerHTML = `
+            <div class="status-box available">
+              <h3 style="color: var(--success)">Available!</h3>
+              <p><code>data:,${currentName}</code> is not claimed</p>
+            </div>
+          `;
+          claimBtn.style.display = 'block';
+          hint.textContent = 'This will inscribe data:,' + currentName + ' on Base. Gas is ~$0.001.';
+        } else {
+          statusArea.innerHTML = `
+            <div class="status-box taken">
+              <h3 style="color: var(--danger)">Name Taken</h3>
+              <p>Owned by ${nameData.owner?.slice(0, 6)}...${nameData.owner?.slice(-4)}</p>
+              <p style="margin-top: 8px;"><a href="javascript:void(0)" onclick="tryAnother()">Try another name</a></p>
+            </div>
+          `;
+          hint.textContent = '';
+        }
+      } catch (e) {
+        statusArea.innerHTML = `<div class="status-box taken"><p>Error checking name</p></div>`;
+      }
+
+      checkBtn.disabled = false;
+      checkBtn.textContent = 'Check Availability';
+    });
+
+    function tryAnother() {
+      nameInput.value = '';
+      nameInput.focus();
+      currentName = '';
+      nameData = null;
+      statusArea.innerHTML = '';
+      checkBtn.style.display = 'none';
+      claimBtn.style.display = 'none';
+      hint.textContent = '';
+    }
+
+    // Claim name
+    claimBtn.addEventListener('click', async () => {
+      if (!window.ethereum) {
+        alert('Please install MetaMask or another Web3 wallet');
+        return;
+      }
+
+      claimBtn.disabled = true;
+      claimBtn.innerHTML = '<span class="loading"></span> Confirm in wallet...';
+
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+        // Switch to Base
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: BASE_CHAIN_ID }]
+          });
+        } catch (switchError) {
+          if (switchError.code === 4902) {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: BASE_CHAIN_ID,
+                chainName: 'Base',
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                rpcUrls: ['https://mainnet.base.org'],
+                blockExplorerUrls: ['https://basescan.org']
+              }]
+            });
+          }
+        }
+
+        // Create calldata
+        const content = `data:,${currentName}`;
+        const hex = '0x' + Array.from(new TextEncoder().encode(content))
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join('');
+
+        const tx = await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: accounts[0],
+            to: accounts[0],
+            data: hex,
+            value: '0x0'
+          }]
+        });
+
+        statusArea.innerHTML = `
+          <div class="status-box success">
+            <h3 style="color: var(--success)">✓ ${currentName}.basescriptions.com is yours!</h3>
+            <p style="font-family: monospace; font-size: 12px; word-break: break-all; margin: 12px 0;">${tx}</p>
+            <p>Wait ~2 seconds for block confirmation</p>
+            <p style="margin-top: 16px;">
+              <a href="https://basescan.org/tx/${tx}" target="_blank">View on BaseScan →</a>
+            </p>
+          </div>
+        `;
+        claimBtn.style.display = 'none';
+        hint.innerHTML = `<a href="/upload/?name=${currentName}" style="color: var(--accent); font-size: 16px; font-weight: 600;">Upload Your Site →</a>`;
+
+      } catch (e) {
+        statusArea.innerHTML = `<div class="status-box taken"><p>${e.message}</p></div>`;
+        claimBtn.disabled = false;
+        claimBtn.textContent = 'Connect & Claim on Base';
+      }
+    });
+  </script>
+</body>
+</html>

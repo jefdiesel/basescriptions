@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Basescriptions - Ethscriptions on Base</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #141414;
+      --bg-card: rgba(255, 255, 255, 0.05);
+      --border: rgba(255, 255, 255, 0.1);
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.6);
+      --accent-blue: #0052FF;
+      --accent-green: #30E000;
+      --accent-red: #FF494A;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Header */
+    header {
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    header .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--accent-blue);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    nav {
+      display: flex;
+      gap: 32px;
+    }
+
+    nav a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    nav a:hover {
+      color: var(--text-primary);
+    }
+
+    .connect-btn {
+      background: var(--accent-blue);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 9999px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .connect-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* Hero */
+    .hero {
+      padding: 80px 0;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 56px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff 0%, #0052FF 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 20px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 40px;
+    }
+
+    /* Search */
+    .search-box {
+      max-width: 600px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 20px 24px;
+      padding-right: 140px;
+      font-size: 18px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-blue);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .search-btn {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--accent-blue);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .search-btn:hover {
+      opacity: 0.9;
+    }
+
+    .search-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Result */
+    .result {
+      margin-top: 24px;
+      padding: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      display: none;
+    }
+
+    .result.show {
+      display: block;
+    }
+
+    .result.available {
+      border-color: var(--accent-green);
+    }
+
+    .result.taken {
+      border-color: var(--accent-red);
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .result-status {
+      padding: 6px 12px;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .result-status.available {
+      background: rgba(48, 224, 0, 0.2);
+      color: var(--accent-green);
+    }
+
+    .result-status.taken {
+      background: rgba(255, 73, 74, 0.2);
+      color: var(--accent-red);
+    }
+
+    .result-name {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .result-details {
+      color: var(--text-secondary);
+      font-size: 14px;
+      word-break: break-all;
+    }
+
+    .result-details p {
+      margin: 8px 0;
+    }
+
+    .register-btn {
+      margin-top: 20px;
+      background: var(--accent-green);
+      color: #000;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .register-btn:hover {
+      opacity: 0.9;
+    }
+
+    .register-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Stats */
+    .stats {
+      padding: 60px 0;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--accent-blue);
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      margin-top: 8px;
+    }
+
+    /* Recent */
+    .recent {
+      padding: 60px 0;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .recent-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .inscription-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 0.2s;
+    }
+
+    .inscription-card:hover {
+      border-color: var(--accent-blue);
+    }
+
+    .inscription-content {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      word-break: break-all;
+    }
+
+    .inscription-meta {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .inscription-meta span {
+      display: block;
+      margin: 4px 0;
+    }
+
+    /* Footer */
+    footer {
+      padding: 40px 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-secondary);
+    }
+
+    footer a {
+      color: var(--accent-blue);
+      text-decoration: none;
+    }
+
+    /* Loading */
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent-blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px;
+      color: var(--text-secondary);
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 36px;
+      }
+
+      nav {
+        display: none;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="logo">
+        <div class="logo-icon">B</div>
+        <span>Basescriptions</span>
+      </div>
+      <nav>
+        <a href="/register/">Register</a>
+        <a href="/upload/">Upload</a>
+        <a href="/view/">View</a>
+        <a href="#recent">Recent</a>
+      </nav>
+      <button class="connect-btn" id="connectBtn">Connect Wallet</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="search">
+      <div class="container">
+        <h1>Ethscriptions on Base</h1>
+        <p>Register names and data on Base L2 for ~$0.001. First come, first served. Stored forever onchain.</p>
+
+        <div class="search-box">
+          <input type="text" class="search-input" id="searchInput" placeholder="Search for a name..." autocomplete="off">
+          <button class="search-btn" id="searchBtn">Check</button>
+        </div>
+
+        <div class="result" id="result">
+          <div class="result-header">
+            <span class="result-status" id="resultStatus">Available</span>
+            <span class="result-name" id="resultName"></span>
+          </div>
+          <div class="result-details" id="resultDetails"></div>
+          <button class="register-btn" id="registerBtn" style="display: none;">Register Now</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div class="container">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="statTotal">-</div>
+            <div class="stat-label">Total Inscriptions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statTransfers">-</div>
+            <div class="stat-label">Transfers</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statBlock">-</div>
+            <div class="stat-label">Last Indexed Block</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">~$0.001</div>
+            <div class="stat-label">Cost per Inscription</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="recent" id="recent">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Recent Inscriptions</h2>
+        </div>
+        <div class="recent-grid" id="recentGrid">
+          <div class="empty-state">Loading...</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Basescriptions - Ethscriptions protocol on Base L2</p>
+      <p style="margin-top: 8px;">
+        <a href="https://github.com/jefdiesel/basescriptions" target="_blank">GitHub</a> &middot;
+        <a href="https://basescan.org" target="_blank">BaseScan</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    const API_BASE = 'https://basescriptions-api.wrapit.workers.dev';
+    const BASE_CHAIN_ID = 8453;
+
+    let provider = null;
+    let signer = null;
+    let address = null;
+
+    // Elements
+    const connectBtn = document.getElementById('connectBtn');
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const result = document.getElementById('result');
+    const resultStatus = document.getElementById('resultStatus');
+    const resultName = document.getElementById('resultName');
+    const resultDetails = document.getElementById('resultDetails');
+    const registerBtn = document.getElementById('registerBtn');
+    const recentGrid = document.getElementById('recentGrid');
+
+    // Connect wallet
+    connectBtn.addEventListener('click', async () => {
+      if (typeof window.ethereum === 'undefined') {
+        alert('Please install MetaMask or another Web3 wallet');
+        return;
+      }
+
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        address = accounts[0];
+
+        // Switch to Base
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x2105' }],
+          });
+        } catch (switchError) {
+          if (switchError.code === 4902) {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: '0x2105',
+                chainName: 'Base',
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                rpcUrls: ['https://mainnet.base.org'],
+                blockExplorerUrls: ['https://basescan.org']
+              }]
+            });
+          }
+        }
+
+        connectBtn.textContent = address.slice(0, 6) + '...' + address.slice(-4);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
+    // Search
+    searchBtn.addEventListener('click', checkName);
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') checkName();
+    });
+
+    async function checkName() {
+      const name = searchInput.value.trim();
+      if (!name) return;
+
+      searchBtn.disabled = true;
+      searchBtn.innerHTML = '<span class="loading"></span>';
+
+      try {
+        const res = await fetch(`${API_BASE}/name/${encodeURIComponent(name)}`);
+        const data = await res.json();
+
+        result.classList.add('show');
+        resultName.textContent = name;
+
+        if (data.available) {
+          result.classList.remove('taken');
+          result.classList.add('available');
+          resultStatus.textContent = 'Available';
+          resultStatus.classList.remove('taken');
+          resultStatus.classList.add('available');
+          resultDetails.innerHTML = `
+            <p><strong>Content:</strong> ${data.content}</p>
+            <p><strong>Hash:</strong> ${data.hash}</p>
+          `;
+          registerBtn.style.display = 'inline-block';
+          registerBtn.onclick = () => registerName(name);
+        } else {
+          result.classList.remove('available');
+          result.classList.add('taken');
+          resultStatus.textContent = 'Taken';
+          resultStatus.classList.remove('available');
+          resultStatus.classList.add('taken');
+          resultDetails.innerHTML = `
+            <p><strong>Owner:</strong> ${data.owner}</p>
+            <p><strong>Creator:</strong> ${data.creator}</p>
+            <p><strong>Block:</strong> ${data.creation_block}</p>
+            <p><strong>Hash:</strong> ${data.hash}</p>
+          `;
+          registerBtn.style.display = 'none';
+        }
+      } catch (error) {
+        console.error(error);
+        alert('Error checking name');
+      }
+
+      searchBtn.disabled = false;
+      searchBtn.textContent = 'Check';
+    }
+
+    // Register
+    async function registerName(name) {
+      if (!address) {
+        alert('Please connect your wallet first');
+        return;
+      }
+
+      const content = `data:,${name}`;
+      const data = stringToHex(content);
+
+      registerBtn.disabled = true;
+      registerBtn.textContent = 'Registering...';
+
+      try {
+        const txHash = await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: address,
+            to: address, // Self-transfer
+            data: data,
+            value: '0x0'
+          }]
+        });
+
+        registerBtn.textContent = 'Registered!';
+        resultDetails.innerHTML += `<p><strong>TX:</strong> <a href="https://basescan.org/tx/${txHash}" target="_blank" style="color: var(--accent-blue)">${txHash.slice(0, 20)}...</a></p>`;
+      } catch (error) {
+        console.error(error);
+        registerBtn.disabled = false;
+        registerBtn.textContent = 'Register Now';
+        alert('Registration failed: ' + error.message);
+      }
+    }
+
+    function stringToHex(str) {
+      let hex = '0x';
+      for (let i = 0; i < str.length; i++) {
+        hex += str.charCodeAt(i).toString(16).padStart(2, '0');
+      }
+      return hex;
+    }
+
+    // Load stats
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API_BASE}/stats`);
+        const data = await res.json();
+
+        document.getElementById('statTotal').textContent = data.total_ethscriptions.toLocaleString();
+        document.getElementById('statTransfers').textContent = data.total_transfers.toLocaleString();
+        document.getElementById('statBlock').textContent = data.last_indexed_block.toLocaleString();
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    // Load recent
+    async function loadRecent() {
+      try {
+        const res = await fetch(`${API_BASE}/recent?limit=12`);
+        const data = await res.json();
+
+        if (!data.ethscriptions || data.ethscriptions.length === 0) {
+          recentGrid.innerHTML = '<div class="empty-state">No inscriptions indexed yet. Backfill in progress...</div>';
+          return;
+        }
+
+        recentGrid.innerHTML = data.ethscriptions.map(e => `
+          <div class="inscription-card">
+            <div class="inscription-content">${escapeHtml(e.content_uri.replace('data:,', ''))}</div>
+            <div class="inscription-meta">
+              <span>Owner: ${e.current_owner.slice(0, 8)}...${e.current_owner.slice(-6)}</span>
+              <span>Block: ${e.creation_block.toLocaleString()}</span>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error(error);
+        recentGrid.innerHTML = '<div class="empty-state">Error loading recent inscriptions</div>';
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Init
+    loadStats();
+    loadRecent();
+
+    // Auto-refresh
+    setInterval(loadStats, 30000);
+    setInterval(loadRecent, 30000);
+  </script>
+</body>
+</html>

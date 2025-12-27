@@ -1,0 +1,9 @@
+name = "basescriptions-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[vars]
+SUPABASE_URL = "https://fjkmxgseeqmmlqvqcfhv.supabase.co"
+
+# Add SUPABASE_ANON_KEY as a secret:
+# wrangler secret put SUPABASE_ANON_KEY
