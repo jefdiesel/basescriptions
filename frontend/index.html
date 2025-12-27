@@ -431,6 +431,22 @@
       animation: spin 0.8s linear infinite;
     }
 
+    /* Sync Banner */
+    .sync-banner {
+      background: var(--bg-secondary);
+      text-align: center;
+      padding: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+    .sync-banner.synced {
+      color: var(--accent-green);
+    }
+    .sync-banner.behind {
+      color: var(--accent-red);
+    }
+
     /* Hamburger Menu */
     .hamburger {
       display: none;
@@ -571,6 +587,9 @@
   </style>
 </head>
 <body>
+  <div class="sync-banner" id="syncBanner">
+    <span id="syncStatus">Loading...</span>
+  </div>
   <header>
     <div class="container">
       <div class="logo">
@@ -867,12 +886,19 @@
         document.getElementById('statTransfers').textContent = data.total_transfers.toLocaleString();
 
         const behindEl = document.getElementById('statBehind');
+        const syncBanner = document.getElementById('syncBanner');
+        const syncStatus = document.getElementById('syncStatus');
+
         if (blocksBehind === 0) {
           behindEl.textContent = 'Synced';
           behindEl.style.color = 'var(--accent-green)';
+          syncStatus.textContent = 'Synced';
+          syncBanner.className = 'sync-banner synced';
         } else {
           behindEl.textContent = blocksBehind.toLocaleString();
           behindEl.style.color = blocksBehind > 1000 ? 'var(--accent-red)' : 'var(--accent-blue)';
+          syncStatus.textContent = blocksBehind.toLocaleString() + ' blocks behind';
+          syncBanner.className = blocksBehind > 1000 ? 'sync-banner behind' : 'sync-banner';
         }
       } catch (error) {
         console.error(error);

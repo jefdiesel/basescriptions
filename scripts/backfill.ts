@@ -160,7 +160,7 @@ async function main() {
     // Save progress
     await supabase
       .from('indexer_state')
-      .upsert({ key: 'last_block', value: processed.toString(), updated_at: new Date().toISOString() })
+      .upsert({ key: 'base_ethscriptions', value: processed.toString(), updated_at: new Date().toISOString() })
   }
 
   console.log('\n\nBackfill complete!')
