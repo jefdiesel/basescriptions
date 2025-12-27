@@ -10,9 +10,28 @@ const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY!
 const provider = new JsonRpcProvider(BASE_RPC)
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
-const START_BLOCK = parseInt(process.env.START_BLOCK || '0')
 const BATCH_SIZE = parseInt(process.env.BATCH_SIZE || '100')
 const CONCURRENCY = parseInt(process.env.CONCURRENCY || '5')
+
+async function getStartBlock(): Promise<number> {
+  // Check env var first
+  if (process.env.START_BLOCK) {
+    return parseInt(process.env.START_BLOCK)
+  }
+  // Otherwise, read from database
+  const { data } = await supabase
+    .from('indexer_state')
+    .select('value')
+    .eq('key', 'base_ethscriptions')
+    .single()
+
+  if (data?.value) {
+    const lastBlock = parseInt(data.value)
+    console.log(`Resuming from saved position: block ${lastBlock}`)
+    return lastBlock
+  }
+  return 0
+}
 
 function hexToUtf8(hex: string): string | null {
   try {
@@ -118,12 +137,14 @@ async function main() {
   console.log('===========================\n')
 
   const currentBlock = await provider.getBlockNumber()
+  const startBlock = await getStartBlock()
+
   console.log(`Current block: ${currentBlock}`)
-  console.log(`Starting from: ${START_BLOCK}`)
+  console.log(`Starting from: ${startBlock}`)
   console.log(`Batch size: ${BATCH_SIZE}`)
   console.log(`Concurrency: ${CONCURRENCY}\n`)
 
-  let processed = START_BLOCK
+  let processed = startBlock
   let totalCreated = 0
   let totalTransferred = 0
   const startTime = Date.now()
