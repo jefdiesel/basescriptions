@@ -799,6 +799,8 @@
             <p><strong>Hash:</strong> ${data.hash}</p>
           `;
           registerBtn.style.display = 'inline-block';
+          registerBtn.disabled = false;
+          registerBtn.textContent = 'Register Now';
           registerBtn.onclick = () => registerName(name);
         } else {
           result.classList.remove('available');
@@ -880,16 +882,30 @@
           }]
         });
 
-        registerBtn.textContent = 'Registered!';
+        registerBtn.style.display = 'none';
         localStorage.setItem('connectedWallet', address);
         connectBtn.textContent = address.slice(0, 6) + '...' + address.slice(-4);
-        resultDetails.innerHTML += `<p><strong>TX:</strong> <a href="https://basescan.org/tx/${txHash}" target="_blank" style="color: var(--accent-blue)">${txHash.slice(0, 20)}...</a></p>`;
+        resultDetails.innerHTML = `
+          <p><strong>TX:</strong> <a href="https://basescan.org/tx/${txHash}" target="_blank" style="color: var(--accent-blue)">${txHash.slice(0, 20)}...</a></p>
+          <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
+            <a href="/inscribe/" style="color: var(--accent-blue); font-size: 16px; font-weight: 600;">Inscribe Data →</a>
+            <a href="javascript:void(0)" onclick="registerAnother()" style="color: var(--accent-green); font-size: 16px; font-weight: 600;">Register Another →</a>
+          </div>
+        `;
       } catch (error) {
         console.error(error);
         registerBtn.disabled = false;
         registerBtn.textContent = 'Register Now';
         alert('Registration failed: ' + (error.message || 'Unknown error'));
       }
+    }
+
+    function registerAnother() {
+      searchInput.value = '';
+      searchInput.focus();
+      result.classList.remove('show', 'available', 'taken');
+      registerBtn.style.display = 'none';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function stringToHex(str) {
