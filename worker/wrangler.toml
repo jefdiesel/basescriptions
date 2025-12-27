@@ -7,3 +7,4 @@ SUPABASE_URL = "https://fjkmxgseeqmmlqvqcfhv.supabase.co"
 
 # Add SUPABASE_ANON_KEY as a secret:
 # wrangler secret put SUPABASE_ANON_KEY
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqa214Z3NlZXFtbWxxdnFjZmh2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Njc4ODEzMCwiZXhwIjoyMDgyMzY0MTMwfQ.Ec1b4SqeJk382LmwXBMTLYMSY3Ssm10sdfCmwOefqrw"

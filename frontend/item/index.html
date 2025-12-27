@@ -391,6 +391,11 @@
     const pathParts = window.location.pathname.split('/').filter(p => p && p !== 'item' && p !== 'view');
     let id = pathParts[pathParts.length - 1] || params.get('id') || params.get('hash') || params.get('tx');
 
+    // Clean up URL if we have ?id= param - replace with clean path
+    if (id && params.get('id') && window.location.pathname === '/item/') {
+      history.replaceState(null, '', '/item/' + id);
+    }
+
     if (!id) {
       document.getElementById('content').innerHTML = '<div class="error">No inscription ID provided</div>';
     } else {
@@ -624,28 +629,42 @@
 
         // Send transfer tx - data is the inscription hash
         confirmBtn.textContent = 'Confirm in wallet...';
+
+        // Validate inscription data
+        if (!inscriptionData || !inscriptionData.id) {
+          throw new Error('Inscription data not loaded');
+        }
+
+        const inscriptionHash = inscriptionData.id;
+        console.log('Transferring inscription:', inscriptionHash);
+        console.log('From:', account);
+        console.log('To:', toAddress);
+
         const txHash = await window.ethereum.request({
           method: 'eth_sendTransaction',
           params: [{
             from: account,
             to: toAddress,
-            data: inscriptionData.id,
+            data: inscriptionHash,
             value: '0x0'
           }]
         });
 
         // Update database
+        console.log('Updating DB with transfer:', { hash: inscriptionHash, from: account, to: toAddress, tx_hash: txHash });
         try {
-          await fetch(`${API_BASE}/transfer`, {
+          const transferRes = await fetch(`${API_BASE}/transfer`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              hash: inscriptionData.id,
+              hash: inscriptionHash,
               from: account,
               to: toAddress,
               tx_hash: txHash
             })
           });
+          const transferData = await transferRes.json();
+          console.log('Transfer API response:', transferData);
         } catch (e) {
           console.log('DB transfer error (will be indexed later):', e);
         }

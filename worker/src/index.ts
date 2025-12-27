@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 
 type Bindings = {
   SUPABASE_URL: string
-  SUPABASE_ANON_KEY: string
+  SUPABASE_KEY: string
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -20,9 +20,14 @@ async function sha256(content: string): Promise<string> {
   return '0x' + hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
-// Helper: get supabase client
+// Helper: get supabase client with service key
 function getDb(c: any) {
-  return createClient(c.env.SUPABASE_URL, c.env.SUPABASE_ANON_KEY)
+  return createClient(c.env.SUPABASE_URL, c.env.SUPABASE_KEY)
+}
+
+// Alias for backwards compat
+function getDbAdmin(c: any) {
+  return getDb(c)
 }
 
 // GET / - API info
@@ -221,7 +226,7 @@ app.post('/register', async (c) => {
     }
 
     const hash = await sha256(content)
-    const db = getDb(c)
+    const db = getDbAdmin(c)
 
     // Check if already exists
     const { data: existing } = await db
@@ -273,14 +278,31 @@ app.post('/transfer', async (c) => {
       return c.json({ error: 'Missing required fields' }, 400)
     }
 
-    const db = getDb(c)
+    const db = getDbAdmin(c)
+    const hashLower = hash.toLowerCase()
+    const fromLower = from.toLowerCase()
+    const toLower = to.toLowerCase()
+
+    // First verify the inscription exists and check current owner
+    const { data: existing } = await db
+      .from('base_ethscriptions')
+      .select('id, current_owner')
+      .eq('id', hashLower)
+      .single()
+
+    if (!existing) {
+      return c.json({ error: 'Inscription not found' }, 404)
+    }
+
+    if (existing.current_owner !== fromLower) {
+      return c.json({ error: `Owner mismatch: DB has ${existing.current_owner}, tx from ${fromLower}` }, 400)
+    }
 
     // Update owner
     const { error: updateError } = await db
       .from('base_ethscriptions')
-      .update({ current_owner: to.toLowerCase() })
-      .eq('id', hash.toLowerCase())
-      .eq('current_owner', from.toLowerCase())
+      .update({ current_owner: toLower })
+      .eq('id', hashLower)
 
     if (updateError) {
       return c.json({ error: updateError.message }, 500)
@@ -288,19 +310,19 @@ app.post('/transfer', async (c) => {
 
     // Record transfer
     const { error: insertError } = await db.from('base_transfers').insert({
-      ethscription_id: hash.toLowerCase(),
-      from_address: from.toLowerCase(),
-      to_address: to.toLowerCase(),
+      ethscription_id: hashLower,
+      from_address: fromLower,
+      to_address: toLower,
       tx_hash: tx_hash.toLowerCase(),
       block_number: 0,
       timestamp: new Date().toISOString()
     })
 
     if (insertError) {
-      console.log('Transfer insert error:', insertError)
+      return c.json({ error: 'Transfer recorded but history insert failed: ' + insertError.message }, 500)
     }
 
-    return c.json({ success: true })
+    return c.json({ success: true, new_owner: toLower })
   } catch (e: any) {
     return c.json({ error: e.message }, 500)
   }

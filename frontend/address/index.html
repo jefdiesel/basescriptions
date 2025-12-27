@@ -274,6 +274,11 @@
       let address = params.get('address');
       let displayName = null;
 
+      // Clean up URL if we have ?address= param - replace with clean path
+      if (address && window.location.pathname === '/address/') {
+        history.replaceState(null, '', '/address/' + address);
+      }
+
       // Check path for address or name
       if (!address) {
         const path = window.location.pathname;

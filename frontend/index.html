@@ -175,11 +175,15 @@
     /* Result */
     .result {
       margin-top: 24px;
-      padding: 24px;
+      padding: 20px 24px;
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: 12px;
       display: none;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
     }
 
     .result.show {
@@ -197,14 +201,15 @@
     .result-header {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 12px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .result-status {
-      padding: 6px 12px;
+      padding: 4px 10px;
       border-radius: 9999px;
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 600;
     }
 
@@ -219,29 +224,33 @@
     }
 
     .result-name {
-      font-size: 24px;
+      font-size: 20px;
       font-weight: 700;
     }
 
     .result-details {
       color: var(--text-secondary);
       font-size: 14px;
-      word-break: break-all;
     }
 
-    .result-details p {
-      margin: 8px 0;
+    .result-details a {
+      color: var(--accent-blue);
+      text-decoration: none;
+    }
+
+    .result-details a:hover {
+      text-decoration: underline;
     }
 
     .register-btn {
-      margin-top: 20px;
+      margin-top: 16px;
       background: var(--accent-green);
       color: #000;
       border: none;
-      padding: 14px 28px;
-      border-radius: 12px;
+      padding: 12px 24px;
+      border-radius: 10px;
       font-weight: 600;
-      font-size: 16px;
+      font-size: 15px;
       cursor: pointer;
       transition: opacity 0.2s;
     }
@@ -781,6 +790,24 @@
       searchBtn.disabled = true;
       searchBtn.innerHTML = '<span class="loading"></span>';
 
+      // Restore result structure if it was replaced by success message
+      if (!document.getElementById('resultStatus')) {
+        result.innerHTML = `
+          <div class="result-header">
+            <span class="result-status" id="resultStatus">Available</span>
+            <span class="result-name" id="resultName"></span>
+          </div>
+          <div class="result-details" id="resultDetails"></div>
+          <button class="register-btn" id="registerBtn" style="display: none;">Register Now</button>
+        `;
+        result.style.borderColor = '';
+      }
+
+      const resultStatus = document.getElementById('resultStatus');
+      const resultName = document.getElementById('resultName');
+      const resultDetails = document.getElementById('resultDetails');
+      const registerBtn = document.getElementById('registerBtn');
+
       try {
         const res = await fetch(`${API_BASE}/name/${encodeURIComponent(name)}`);
         const data = await res.json();
@@ -794,10 +821,7 @@
           resultStatus.textContent = 'Available';
           resultStatus.classList.remove('taken');
           resultStatus.classList.add('available');
-          resultDetails.innerHTML = `
-            <p><strong>Content:</strong> ${data.content}</p>
-            <p><strong>Hash:</strong> ${data.hash}</p>
-          `;
+          resultDetails.innerHTML = '';
           registerBtn.style.display = 'inline-block';
           registerBtn.disabled = false;
           registerBtn.textContent = 'Register Now';
@@ -808,11 +832,9 @@
           resultStatus.textContent = 'Taken';
           resultStatus.classList.remove('available');
           resultStatus.classList.add('taken');
+          const shortOwner = data.owner.slice(0, 6) + '...' + data.owner.slice(-4);
           resultDetails.innerHTML = `
-            <p><strong>Owner:</strong> ${data.owner}</p>
-            <p><strong>Creator:</strong> ${data.creator}</p>
-            <p><strong>Block:</strong> ${data.creation_block}</p>
-            <p><strong>Hash:</strong> ${data.hash}</p>
+            <p>Owned by <a href="/${data.owner}">${shortOwner}</a></p>
           `;
           registerBtn.style.display = 'none';
         }
