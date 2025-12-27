@@ -76,9 +76,16 @@ async function processBlockBatch(startBlock: number, count: number): Promise<{
 
       if (from === to) {
         const content = hexToUtf8(tx.data)
-        if (!content || !content.startsWith('data:,')) continue
+        if (!content || !content.startsWith('data:')) continue
 
         const hash = sha256(content)
+
+        // Extract content type from data URI
+        let contentType = 'text/plain'
+        const match = content.match(/^data:([^,;]+)/)
+        if (match && match[1]) {
+          contentType = match[1]
+        }
 
         const { data: existing } = await supabase
           .from('base_ethscriptions')
@@ -90,7 +97,7 @@ async function processBlockBatch(startBlock: number, count: number): Promise<{
           await supabase.from('base_ethscriptions').insert({
             id: hash,
             content_uri: content,
-            content_type: 'text/plain',
+            content_type: contentType,
             creator: from,
             current_owner: from,
             creation_tx: tx.hash,
