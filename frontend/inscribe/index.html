@@ -289,6 +289,88 @@
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Hamburger Menu */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+    }
+    .hamburger span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: var(--text);
+      transition: all 0.3s;
+    }
+    .hamburger.active span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+    .hamburger.active span:nth-child(2) {
+      opacity: 0;
+    }
+    .hamburger.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(5px, -5px);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .nav-links a {
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg);
+      z-index: 100;
+      flex-direction: column;
+      padding: 80px 24px 24px;
+    }
+    .mobile-nav.active { display: flex; }
+    .mobile-nav a {
+      display: block;
+      padding: 16px 0;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 20px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+    .mobile-nav .connect-btn {
+      margin-top: 24px;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 16px; }
+      header { padding: 16px 0; margin-bottom: 20px; }
+      .logo { font-size: 20px; }
+      .logo-icon { width: 32px; height: 32px; font-size: 16px; }
+      .nav-links { display: none; }
+      .hamburger { display: flex; z-index: 101; }
+      .page-title h1 { font-size: 24px; }
+      .page-title p { font-size: 14px; }
+      .tabs { gap: 4px; padding: 4px; }
+      .tab { padding: 10px 8px; font-size: 12px; }
+      .card { padding: 16px; }
+      .file-upload { padding: 24px; }
+      .file-upload-icon { font-size: 36px; }
+    }
   </style>
 </head>
 <body>
@@ -298,8 +380,25 @@
         <div class="logo-icon">B</div>
         <span>Basescriptions</span>
       </a>
-      <button class="connect-btn" id="connectBtn">Connect Wallet</button>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/register/">Register</a>
+        <a href="/inscribe/">Inscribe</a>
+        <button class="connect-btn" id="connectBtn">Connect Wallet</button>
+      </div>
+      <button class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
     </header>
+
+    <div class="mobile-nav" id="mobileNav">
+      <a href="/">Home</a>
+      <a href="/register/">Register</a>
+      <a href="/inscribe/">Inscribe</a>
+      <button class="connect-btn" id="mobileConnectBtn">Connect Wallet</button>
+    </div>
 
     <div class="page-title">
       <h1>Inscribe on Base</h1>
@@ -385,6 +484,12 @@ data:image/png;base64,iVBORw0KGgo..."></textarea>
     let currentTab = 'text';
     let fileData = null;
 
+    // Sync connect button text
+    function updateConnectButtons(text) {
+      document.getElementById('connectBtn').textContent = text;
+      document.getElementById('mobileConnectBtn').textContent = text;
+    }
+
     // Tab switching
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
@@ -427,7 +532,7 @@ data:image/png;base64,iVBORw0KGgo..."></textarea>
           }
         }
 
-        document.getElementById('connectBtn').textContent = address.slice(0, 6) + '...' + address.slice(-4);
+        updateConnectButtons(address.slice(0, 6) + '...' + address.slice(-4));
       } catch (e) {
         console.error(e);
       }
@@ -581,6 +686,23 @@ data:image/png;base64,iVBORw0KGgo..."></textarea>
       if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
       return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
     }
+
+    // Hamburger menu
+    const hamburger = document.getElementById('hamburger');
+    const mobileNav = document.getElementById('mobileNav');
+    const mobileConnectBtn = document.getElementById('mobileConnectBtn');
+
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('active');
+      mobileNav.classList.toggle('active');
+    });
+
+    mobileConnectBtn.addEventListener('click', async () => {
+      await document.getElementById('connectBtn').click();
+      hamburger.classList.remove('active');
+      mobileNav.classList.remove('active');
+    });
+
   </script>
 </body>
 </html>

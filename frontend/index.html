@@ -312,8 +312,15 @@
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 20px;
+      padding: 16px;
       transition: border-color 0.2s;
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
     }
 
     .inscription-card:hover {
@@ -321,10 +328,11 @@
     }
 
     .inscription-content {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 600;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       word-break: break-all;
+      overflow: hidden;
     }
 
     .inscription-meta {
@@ -423,17 +431,141 @@
       animation: spin 0.8s linear infinite;
     }
 
+    /* Hamburger Menu */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      z-index: 101;
+    }
+    .hamburger span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: var(--text-primary);
+      transition: all 0.3s;
+    }
+    .hamburger.active span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+    .hamburger.active span:nth-child(2) {
+      opacity: 0;
+    }
+    .hamburger.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(5px, -5px);
+    }
+
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg-primary);
+      z-index: 100;
+      flex-direction: column;
+      padding: 100px 24px 24px;
+    }
+    .mobile-nav.active { display: flex; }
+    .mobile-nav a {
+      display: block;
+      padding: 16px 0;
+      color: var(--text-primary);
+      text-decoration: none;
+      font-size: 20px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+    .mobile-nav .connect-btn {
+      margin-top: 24px;
+      text-align: center;
+    }
+
     @media (max-width: 768px) {
+      .hamburger { display: flex; }
+
       .hero h1 {
-        font-size: 36px;
+        font-size: 32px;
+      }
+
+      .hero p {
+        font-size: 16px;
       }
 
       nav {
         display: none;
       }
 
+      .search-input {
+        font-size: 16px;
+        padding: 16px;
+        padding-right: 100px;
+      }
+
+      .search-btn {
+        padding: 10px 16px;
+        font-size: 14px;
+      }
+
       .stats-grid {
         grid-template-columns: repeat(2, 1fr);
+      }
+
+      .stat-value {
+        font-size: 24px;
+      }
+
+      .recent-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .inscription-card {
+        padding: 12px;
+      }
+
+      .inscription-content {
+        font-size: 14px;
+      }
+
+      .inscription-meta {
+        font-size: 11px;
+      }
+
+      .section-title {
+        font-size: 22px;
+      }
+
+      header .container {
+        padding: 0 16px;
+      }
+
+      .logo {
+        font-size: 20px;
+      }
+
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+      }
+
+      .connect-btn {
+        padding: 10px 16px;
+        font-size: 14px;
+      }
+
+      .hero {
+        padding: 40px 0;
+      }
+
+      .stats, .recent {
+        padding: 40px 0;
       }
     }
   </style>
@@ -447,18 +579,31 @@
       </div>
       <nav>
         <a href="/register/">Register</a>
-        <a href="/upload/">Upload</a>
+        <a href="/inscribe/">Inscribe</a>
         <a href="#recent">Recent</a>
       </nav>
       <button class="connect-btn" id="connectBtn">Connect Wallet</button>
+      <button class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
     </div>
   </header>
+
+  <div class="mobile-nav" id="mobileNav">
+    <a href="/">Home</a>
+    <a href="/register/">Register</a>
+    <a href="/inscribe/">Inscribe</a>
+    <a href="#recent" onclick="closeMobileNav()">Recent</a>
+    <button class="connect-btn" id="mobileConnectBtn">Connect Wallet</button>
+  </div>
 
   <main>
     <section class="hero" id="search">
       <div class="container">
-        <h1>Ethscriptions on Base</h1>
-        <p>Register names and data on Base L2 for ~$0.001. First come, first served. Stored forever onchain.</p>
+        <h1>Inscriptions on Base</h1>
+        <p>Inscribe calldata, images, encrypted proofs, art, music, even whole websites. Magnitudes cheaper than mainnet. Backed by Fedchain.</p>
 
         <div class="search-box">
           <input type="text" class="search-input" id="searchInput" placeholder="Search for a name..." autocomplete="off">
@@ -488,8 +633,8 @@
             <div class="stat-label">Transfers</div>
           </div>
           <div class="stat-card">
-            <div class="stat-value" id="statBlock">-</div>
-            <div class="stat-label">Last Indexed Block</div>
+            <div class="stat-value" id="statBehind">-</div>
+            <div class="stat-label">Blocks Behind</div>
           </div>
           <div class="stat-card">
             <div class="stat-value">~$0.001</div>
@@ -517,7 +662,7 @@
 
   <footer>
     <div class="container">
-      <p>Basescriptions - Ethscriptions protocol on Base L2</p>
+      <p>Basescriptions - Inscriptions on Base L2</p>
       <p style="margin-top: 8px;">
         <a href="https://github.com/jefdiesel/basescriptions" target="_blank">GitHub</a> &middot;
         <a href="https://basescan.org" target="_blank">BaseScan</a>
@@ -544,10 +689,30 @@
     const registerBtn = document.getElementById('registerBtn');
     const recentGrid = document.getElementById('recentGrid');
 
+    // Restore wallet from localStorage
+    async function restoreWallet() {
+      const saved = localStorage.getItem('connectedWallet');
+      if (saved && window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          if (accounts[0]?.toLowerCase() === saved.toLowerCase()) {
+            address = accounts[0];
+            connectBtn.textContent = address.slice(0, 6) + '...' + address.slice(-4);
+            connectBtn.onclick = () => window.location.href = '/' + address;
+          }
+        } catch (e) {}
+      }
+    }
+    restoreWallet();
+
     // Connect wallet
     connectBtn.addEventListener('click', async () => {
+      if (address) {
+        window.location.href = '/' + address;
+        return;
+      }
       if (typeof window.ethereum === 'undefined') {
-        alert('Please install MetaMask or another Web3 wallet');
+        alert('Please install MetaMask, Coinbase Wallet, or another Web3 wallet');
         return;
       }
 
@@ -576,7 +741,9 @@
           }
         }
 
+        localStorage.setItem('connectedWallet', address);
         connectBtn.textContent = address.slice(0, 6) + '...' + address.slice(-4);
+        connectBtn.onclick = () => window.location.href = '/' + address;
       } catch (error) {
         console.error(error);
       }
@@ -682,12 +849,31 @@
     // Load stats
     async function loadStats() {
       try {
-        const res = await fetch(`${API_BASE}/stats`);
-        const data = await res.json();
+        const [statsRes, blockRes] = await Promise.all([
+          fetch(`${API_BASE}/stats`),
+          fetch('https://mainnet.base.org', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_blockNumber', id: 1 })
+          })
+        ]);
+
+        const data = await statsRes.json();
+        const blockData = await blockRes.json();
+        const currentBlock = parseInt(blockData.result, 16);
+        const blocksBehind = currentBlock - data.last_indexed_block;
 
         document.getElementById('statTotal').textContent = data.total_ethscriptions.toLocaleString();
         document.getElementById('statTransfers').textContent = data.total_transfers.toLocaleString();
-        document.getElementById('statBlock').textContent = data.last_indexed_block.toLocaleString();
+
+        const behindEl = document.getElementById('statBehind');
+        if (blocksBehind === 0) {
+          behindEl.textContent = 'Synced';
+          behindEl.style.color = 'var(--accent-green)';
+        } else {
+          behindEl.textContent = blocksBehind.toLocaleString();
+          behindEl.style.color = blocksBehind > 1000 ? 'var(--accent-red)' : 'var(--accent-blue)';
+        }
       } catch (error) {
         console.error(error);
       }
@@ -788,6 +974,37 @@
 
     // Auto-refresh stats only (don't reset scroll position)
     setInterval(loadStats, 30000);
+
+    // Hamburger menu
+    const hamburger = document.getElementById('hamburger');
+    const mobileNav = document.getElementById('mobileNav');
+    const mobileConnectBtn = document.getElementById('mobileConnectBtn');
+
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('active');
+      mobileNav.classList.toggle('active');
+    });
+
+    function closeMobileNav() {
+      hamburger.classList.remove('active');
+      mobileNav.classList.remove('active');
+    }
+
+    mobileConnectBtn.addEventListener('click', async () => {
+      if (address) {
+        window.location.href = '/' + address;
+        return;
+      }
+      await connectBtn.click();
+      closeMobileNav();
+    });
+
+    // Sync connect button text when wallet connects
+    const originalOnClick = connectBtn.onclick;
+    function updateMobileConnectBtn() {
+      mobileConnectBtn.textContent = connectBtn.textContent;
+    }
+    new MutationObserver(updateMobileConnectBtn).observe(connectBtn, { childList: true, characterData: true, subtree: true });
   </script>
 </body>
 </html>
