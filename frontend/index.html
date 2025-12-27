@@ -885,11 +885,34 @@
         registerBtn.style.display = 'none';
         localStorage.setItem('connectedWallet', address);
         connectBtn.textContent = address.slice(0, 6) + '...' + address.slice(-4);
-        resultDetails.innerHTML = `
-          <p><strong>TX:</strong> <a href="https://basescan.org/tx/${txHash}" target="_blank" style="color: var(--accent-blue)">${txHash.slice(0, 20)}...</a></p>
-          <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
-            <a href="/inscribe/" style="color: var(--accent-blue); font-size: 16px; font-weight: 600;">Inscribe Data →</a>
-            <a href="javascript:void(0)" onclick="registerAnother()" style="color: var(--accent-green); font-size: 16px; font-weight: 600;">Register Another →</a>
+
+        // Show success card
+        result.classList.remove('available', 'taken');
+        result.style.borderColor = 'var(--accent-green)';
+        result.innerHTML = `
+          <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 48px; margin-bottom: 16px;">✓</div>
+            <h2 style="font-size: 32px; font-weight: 800; color: var(--accent-green); margin-bottom: 8px;">${name}</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 24px;">is now yours on Base!</p>
+
+            <div style="background: var(--bg-secondary); border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+              <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">Transaction</p>
+              <a href="https://basescan.org/tx/${txHash}" target="_blank" style="color: var(--accent-blue); font-size: 14px; word-break: break-all;">${txHash}</a>
+            </div>
+
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px;">
+              <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent('Just registered "' + name + '" on @Basescriptions! 🔵\n\nInscriptions on Base L2 for magnitudes cheaper than mainnet.\n\nbasescriptions.com')}" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background: #1DA1F2; color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                <span>Share on X</span>
+              </a>
+              <button onclick="navigator.clipboard.writeText('${name}'); this.textContent='Copied!'" style="background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary); padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                Copy Name
+              </button>
+            </div>
+
+            <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+              <a href="/inscribe/" style="color: var(--accent-blue); font-size: 16px; font-weight: 600;">Inscribe Data →</a>
+              <a href="javascript:void(0)" onclick="registerAnother()" style="color: var(--accent-green); font-size: 16px; font-weight: 600;">Register Another →</a>
+            </div>
           </div>
         `;
       } catch (error) {
