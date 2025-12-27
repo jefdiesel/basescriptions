@@ -135,6 +135,24 @@
 
     .empty { text-align: center; padding: 60px; color: var(--text2); }
     .loading { text-align: center; padding: 60px; color: var(--text2); }
+
+    .load-more {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      padding: 40px;
+      color: var(--text2);
+    }
+    .loading-spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -163,38 +181,62 @@
       <div class="loading">Loading inscriptions...</div>
     </div>
 
-    <div class="pagination" id="pagination" style="display: none;">
-      <button class="page-btn" id="prevBtn">&larr; Prev</button>
-      <span id="pageInfo" style="color: var(--text2);">Page 1</span>
-      <button class="page-btn" id="nextBtn">Next &rarr;</button>
+    <div class="load-more" id="loadMore" style="display: none;">
+      <div class="loading-spinner"></div>
+      <span>Loading more...</span>
     </div>
   </div>
 
   <script>
     const API_BASE = 'https://basescriptions-api.wrapit.workers.dev';
 
-    const params = new URLSearchParams(window.location.search);
-    let address = params.get('address');
+    (async function() {
+      const params = new URLSearchParams(window.location.search);
+      let address = params.get('address');
+      let displayName = null;
 
-    // Also check path
-    if (!address) {
-      const path = window.location.pathname;
-      const match = path.match(/0x[a-fA-F0-9]{40}/);
-      if (match) address = match[0];
-    }
+      // Check path for address or name
+      if (!address) {
+        const path = window.location.pathname;
+        const addrMatch = path.match(/0x[a-fA-F0-9]{40}/);
+        if (addrMatch) {
+          address = addrMatch[0];
+        } else {
+          // Check if it's a name
+          const pathParts = path.split('/').filter(p => p && p !== 'address');
+          const name = pathParts[0];
+          if (name && /^[a-z0-9-]+$/i.test(name)) {
+            displayName = name;
+            // Look up name to get owner address
+            try {
+              const res = await fetch(`${API_BASE}/name/${name.toLowerCase()}`);
+              const data = await res.json();
+              if (!data.available && data.owner) {
+                address = data.owner;
+              }
+            } catch (e) {}
+          }
+        }
+      }
 
-    if (!address) {
-      document.getElementById('content').innerHTML = '<div class="empty">No address provided</div>';
-    } else {
-      document.getElementById('walletAddress').textContent = address.slice(0, 10) + '...' + address.slice(-8);
+      if (!address) {
+        document.getElementById('content').innerHTML = '<div class="empty">No address or name found</div>';
+        return;
+      }
+
+      document.getElementById('walletAddress').textContent = displayName || (address.slice(0, 10) + '...' + address.slice(-8));
       document.getElementById('basescanLink').href = `https://basescan.org/address/${address}`;
-      document.title = `${address.slice(0, 10)}... | Basescriptions`;
+      document.title = `${displayName || address.slice(0, 10) + '...'} | Basescriptions`;
 
       let currentTab = 'owned';
-      let currentPage = 1;
+      let currentOffset = 0;
+      let isLoading = false;
+      let hasMore = true;
       const perPage = 24;
+      const loadMoreEl = document.getElementById('loadMore');
+      const contentEl = document.getElementById('content');
 
-      loadItems();
+      loadItems(true);
 
       // Tab switching
       document.querySelectorAll('.tab').forEach(tab => {
@@ -202,53 +244,73 @@
           document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
           tab.classList.add('active');
           currentTab = tab.dataset.tab;
-          currentPage = 1;
-          loadItems();
+          loadItems(true);
         });
       });
 
-      // Pagination
-      document.getElementById('prevBtn').addEventListener('click', () => { currentPage--; loadItems(); });
-      document.getElementById('nextBtn').addEventListener('click', () => { currentPage++; loadItems(); });
+      // Infinite scroll
+      window.addEventListener('scroll', () => {
+        if (isLoading || !hasMore) return;
+        if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 400) {
+          loadItems(false);
+        }
+      });
 
-      async function loadItems() {
-        const offset = (currentPage - 1) * perPage;
+      async function loadItems(reset = false) {
+        if (isLoading || (!hasMore && !reset)) return;
+
+        if (reset) {
+          currentOffset = 0;
+          hasMore = true;
+          contentEl.innerHTML = '<div class="grid" id="grid"></div>';
+        }
+
+        isLoading = true;
+        loadMoreEl.style.display = 'flex';
+
         const endpoint = currentTab === 'owned' ? 'owned' : 'created';
 
         try {
-          const res = await fetch(`${API_BASE}/${endpoint}/${address}?limit=${perPage}&offset=${offset}`);
+          const res = await fetch(`${API_BASE}/${endpoint}/${address}?limit=${perPage}&offset=${currentOffset}`);
           const data = await res.json();
 
           if (!data.ethscriptions || data.ethscriptions.length === 0) {
-            document.getElementById('content').innerHTML = '<div class="empty">No inscriptions found</div>';
-            document.getElementById('pagination').style.display = 'none';
+            hasMore = false;
+            if (currentOffset === 0) {
+              contentEl.innerHTML = '<div class="empty">No inscriptions found</div>';
+            }
+            loadMoreEl.style.display = 'none';
+            isLoading = false;
             return;
           }
 
-          document.getElementById('content').innerHTML = `
-            <div class="grid">
-              ${data.ethscriptions.map(e => {
-                const content = e.content_uri?.replace(/^data:[^,]*,/, '') || '';
-                return `
-                  <div class="item-card" onclick="window.location='/item/?id=${e.id}'">
-                    <div class="item-content">${escapeHtml(content.slice(0, 15))}</div>
-                    <div class="item-meta">Block ${e.creation_block?.toLocaleString()}</div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          `;
+          const cards = data.ethscriptions.map(e => {
+            const content = e.content_uri?.replace(/^data:[^,]*,/, '') || '';
+            const truncated = content.length > 30 ? content.slice(0, 30) + '...' : content;
+            return `
+              <div class="item-card" onclick="window.location='/item/${e.id}'">
+                <div class="item-content">${escapeHtml(truncated)}</div>
+                <div class="item-meta">Block ${e.creation_block?.toLocaleString()}</div>
+              </div>
+            `;
+          }).join('');
 
-          const totalPages = Math.ceil((data.total || data.ethscriptions.length) / perPage);
-          document.getElementById('pagination').style.display = 'flex';
-          document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
-          document.getElementById('prevBtn').disabled = currentPage <= 1;
-          document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+          document.getElementById('grid').insertAdjacentHTML('beforeend', cards);
+          currentOffset += data.ethscriptions.length;
+
+          if (data.ethscriptions.length < perPage || (data.total && currentOffset >= data.total)) {
+            hasMore = false;
+          }
 
         } catch (e) {
           console.error(e);
-          document.getElementById('content').innerHTML = '<div class="empty">Error loading inscriptions</div>';
+          if (currentOffset === 0) {
+            contentEl.innerHTML = '<div class="empty">Error loading inscriptions</div>';
+          }
         }
+
+        loadMoreEl.style.display = 'none';
+        isLoading = false;
       }
 
       function escapeHtml(text) {
@@ -256,7 +318,7 @@
         div.textContent = text || '';
         return div.innerHTML;
       }
-    }
+    })();
   </script>
 </body>
 </html>

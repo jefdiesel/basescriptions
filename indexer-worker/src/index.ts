@@ -93,7 +93,7 @@ async function indexBlocks(env: Env) {
       const content = hexToString(tx.input);
       if (!content.startsWith('data:')) continue;
 
-      const hash = await sha256(tx.input.toLowerCase());
+      const hash = await sha256(content);
 
       // Insert with conflict handling - Supabase will ignore duplicates
       ethscriptions.push({

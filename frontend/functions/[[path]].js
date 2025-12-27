@@ -5,15 +5,32 @@ export async function onRequest(context) {
   const url = new URL(context.request.url);
   const path = url.pathname;
 
-  // Skip static files and known paths
+  // Skip static files
+  if (path.includes('.') && !path.endsWith('/')) {
+    return context.next();
+  }
+
+  // Handle /item/0x... or /view/0x... routes - serve item page
+  if (path.startsWith('/item/') || path.startsWith('/view/')) {
+    const itemPage = await context.env.ASSETS.fetch(new URL('/item/index.html', url.origin));
+    return new Response(itemPage.body, {
+      headers: { 'Content-Type': 'text/html' }
+    });
+  }
+
+  // Handle /address/0x... routes - serve address page
+  if (path.startsWith('/address/')) {
+    const addressPage = await context.env.ASSETS.fetch(new URL('/address/index.html', url.origin));
+    return new Response(addressPage.body, {
+      headers: { 'Content-Type': 'text/html' }
+    });
+  }
+
+  // Skip known static paths
   if (path.startsWith('/register') ||
       path.startsWith('/upload') ||
-      path.startsWith('/view') ||
-      path.startsWith('/item') ||
-      path.startsWith('/address') ||
       path.startsWith('/inscribe') ||
-      path === '/' ||
-      path.includes('.')) {
+      path === '/') {
     return context.next();
   }
 
@@ -25,31 +42,42 @@ export async function onRequest(context) {
 
   // Check if it's an Ethereum address (0x + 40 hex chars)
   if (/^0x[a-fA-F0-9]{40}$/i.test(segment)) {
-    // Redirect to address page
-    return Response.redirect(`${url.origin}/address/?address=${segment}`, 302);
+    const addressPage = await context.env.ASSETS.fetch(new URL('/address/index.html', url.origin));
+    return new Response(addressPage.body, {
+      headers: { 'Content-Type': 'text/html' }
+    });
   }
 
-  // Check if it's a transaction hash (0x + 64 hex chars)
+  // Check if it's a hash (0x + 64 hex chars)
   if (/^0x[a-fA-F0-9]{64}$/i.test(segment)) {
-    // Redirect to item page
-    return Response.redirect(`${url.origin}/item/?id=${segment}`, 302);
+    const itemPage = await context.env.ASSETS.fetch(new URL('/item/index.html', url.origin));
+    return new Response(itemPage.body, {
+      headers: { 'Content-Type': 'text/html' }
+    });
   }
 
-  // Otherwise, treat as a registered name - check if it exists
+  // Otherwise, treat as a registered name - show owner's wallet
   if (/^[a-z0-9-]+$/i.test(segment) && segment.length <= 32) {
     try {
       const res = await fetch(`${API_BASE}/name/${segment.toLowerCase()}`);
       const data = await res.json();
 
-      if (!data.available && data.hash) {
-        // Name is registered, redirect to item view
-        return Response.redirect(`${url.origin}/item/?id=${data.hash}`, 302);
+      if (!data.available && data.owner) {
+        // Name is registered, show the owner's wallet
+        const addressPage = await context.env.ASSETS.fetch(new URL('/address/index.html', url.origin));
+        return new Response(addressPage.body, {
+          headers: { 'Content-Type': 'text/html' }
+        });
       }
     } catch (e) {
       // Fall through to 404
     }
   }
 
-  // Not found - let it 404
-  return context.next();
+  // Return 404 page
+  const notFoundPage = await context.env.ASSETS.fetch(new URL('/404.html', url.origin));
+  return new Response(notFoundPage.body, {
+    status: 404,
+    headers: { 'Content-Type': 'text/html' }
+  });
 }

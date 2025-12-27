@@ -43,16 +43,18 @@ app.get('/', (c) => {
 
 // GET /name/:name - Check name availability and owner
 app.get('/name/:name', async (c) => {
-  const name = c.req.param('name')
+  const name = c.req.param('name').toLowerCase()
   const content = `data:,${name}`
-  const hash = await sha256(content)
 
   const db = getDb(c)
+  // Search by content_uri since hashes may vary
   const { data } = await db
     .from('base_ethscriptions')
     .select('*')
-    .eq('id', hash)
+    .eq('content_uri', content)
     .single()
+
+  const hash = await sha256(content)
 
   if (!data) {
     return c.json({
@@ -66,7 +68,7 @@ app.get('/name/:name', async (c) => {
   return c.json({
     available: false,
     name,
-    hash,
+    hash: data.id,
     owner: data.current_owner,
     creator: data.creator,
     creation_tx: data.creation_tx,

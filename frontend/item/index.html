@@ -208,15 +208,12 @@
   <script>
     const API_BASE = 'https://basescriptions-api.wrapit.workers.dev';
 
-    // Get ID from URL
+    // Get ID from URL path or query params
     const params = new URLSearchParams(window.location.search);
-    let id = params.get('id') || params.get('hash') || params.get('tx');
-    if (!id) {
-      const pathParts = window.location.pathname.split('/');
-      id = pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
-    }
+    const pathParts = window.location.pathname.split('/').filter(p => p && p !== 'item' && p !== 'view');
+    let id = pathParts[pathParts.length - 1] || params.get('id') || params.get('hash') || params.get('tx');
 
-    if (!id || id === 'item') {
+    if (!id) {
       document.getElementById('content').innerHTML = '<div class="error">No inscription ID provided</div>';
     } else {
       loadInscription(id);

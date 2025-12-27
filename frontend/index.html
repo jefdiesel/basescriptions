@@ -727,15 +727,20 @@
           return;
         }
 
-        const cards = data.ethscriptions.map(e => `
-          <div class="inscription-card" onclick="window.location='/item/${e.id}'">
-            <div class="inscription-content">${escapeHtml(e.content_uri.replace('data:,', ''))}</div>
-            <div class="inscription-meta">
-              <span>Owner: ${e.current_owner.slice(0, 8)}...${e.current_owner.slice(-6)}</span>
-              <span>Block: ${e.creation_block.toLocaleString()}</span>
+        const cards = data.ethscriptions.map(e => {
+          const content = e.content_uri || '';
+          const display = content.replace(/^data:[^,]*,/, '');
+          const truncated = display.length > 50 ? display.slice(0, 50) + '...' : display;
+          return `
+            <div class="inscription-card" onclick="window.location='/item/${e.id}'">
+              <div class="inscription-content">${escapeHtml(truncated)}</div>
+              <div class="inscription-meta">
+                <span>Owner: ${e.current_owner.slice(0, 8)}...${e.current_owner.slice(-6)}</span>
+                <span>Block: ${e.creation_block.toLocaleString()}</span>
+              </div>
             </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
 
         recentGrid.insertAdjacentHTML('beforeend', cards);
         currentOffset += data.ethscriptions.length;
