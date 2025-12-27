@@ -122,6 +122,37 @@
   </style>
 </head>
 <body>
+  <script>
+    // Client-side routing for dynamic paths
+    (function() {
+      const path = window.location.pathname;
+
+      // /item/0x... -> redirect to /item/?id=0x...
+      if (path.startsWith('/item/') && path.length > 7) {
+        const id = path.slice(6);
+        window.location.replace('/item/?id=' + encodeURIComponent(id));
+        return;
+      }
+
+      // /address/0x... -> redirect to /address/?address=0x...
+      if (path.startsWith('/address/') && path.length > 10) {
+        const addr = path.slice(9);
+        window.location.replace('/address/?address=' + encodeURIComponent(addr));
+        return;
+      }
+
+      // /0x... (40 chars = address, 64 chars = hash)
+      const segment = path.replace(/^\//, '').replace(/\/$/, '');
+      if (/^0x[a-fA-F0-9]{40}$/i.test(segment)) {
+        window.location.replace('/address/?address=' + segment);
+        return;
+      }
+      if (/^0x[a-fA-F0-9]{64}$/i.test(segment)) {
+        window.location.replace('/item/?id=' + segment);
+        return;
+      }
+    })();
+  </script>
   <header>
     <div class="container">
       <a href="/" class="logo">

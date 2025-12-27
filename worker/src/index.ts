@@ -263,4 +263,47 @@ app.post('/register', async (c) => {
   }
 })
 
+// POST /transfer - Record a transfer immediately after tx
+app.post('/transfer', async (c) => {
+  try {
+    const body = await c.req.json()
+    const { hash, from, to, tx_hash } = body
+
+    if (!hash || !from || !to || !tx_hash) {
+      return c.json({ error: 'Missing required fields' }, 400)
+    }
+
+    const db = getDb(c)
+
+    // Update owner
+    const { error: updateError } = await db
+      .from('base_ethscriptions')
+      .update({ current_owner: to.toLowerCase() })
+      .eq('id', hash.toLowerCase())
+      .eq('current_owner', from.toLowerCase())
+
+    if (updateError) {
+      return c.json({ error: updateError.message }, 500)
+    }
+
+    // Record transfer
+    const { error: insertError } = await db.from('base_transfers').insert({
+      ethscription_id: hash.toLowerCase(),
+      from_address: from.toLowerCase(),
+      to_address: to.toLowerCase(),
+      tx_hash: tx_hash.toLowerCase(),
+      block_number: 0,
+      timestamp: new Date().toISOString()
+    })
+
+    if (insertError) {
+      console.log('Transfer insert error:', insertError)
+    }
+
+    return c.json({ success: true })
+  } catch (e: any) {
+    return c.json({ error: e.message }, 500)
+  }
+})
+
 export default app

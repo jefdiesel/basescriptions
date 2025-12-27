@@ -2,6 +2,5 @@
 /upload.html /upload/ 301
 /view.html /item/ 301
 /inscribe.html /inscribe/ 301
-/myPoint / 301
 /item/* /item/index.html 200
 /address/* /address/index.html 200

@@ -437,6 +437,21 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    function clearAndReset() {
+      nameInput.value = '';
+      nameInput.focus();
+      currentName = '';
+      nameData = null;
+      statusArea.innerHTML = '';
+      checkBtn.style.display = 'none';
+      claimBtn.style.display = 'none';
+      claimBtn.disabled = false;
+      claimBtn.textContent = 'Connect & Claim on Base';
+      hint.textContent = '';
+      nameError.textContent = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     // Claim name
     claimBtn.addEventListener('click', async () => {
       if (!window.ethereum) {
@@ -527,9 +542,10 @@
           console.log('DB register error (will be indexed later):', e);
         }
 
+        const registeredName = currentName;
         statusArea.innerHTML = `
           <div class="status-box success">
-            <h3 style="color: var(--success)">✓ ${currentName} is yours!</h3>
+            <h3 style="color: var(--success)">✓ ${registeredName} is yours!</h3>
             <p style="font-family: monospace; font-size: 12px; word-break: break-all; margin: 12px 0;">${tx}</p>
             <p style="margin-top: 16px;">
               <a href="https://basescan.org/tx/${tx}" target="_blank">View on BaseScan →</a>
@@ -537,10 +553,14 @@
           </div>
         `;
         claimBtn.style.display = 'none';
+        checkBtn.style.display = 'none';
+        nameInput.value = '';
+        currentName = '';
+        nameData = null;
         hint.innerHTML = `
           <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
-            <a href="/upload/?name=${currentName}" style="color: var(--accent); font-size: 16px; font-weight: 600;">Upload Site →</a>
-            <a href="javascript:void(0)" onclick="registerAnother()" style="color: var(--success); font-size: 16px; font-weight: 600;">Register Another →</a>
+            <a href="/upload/?name=${registeredName}" style="color: var(--accent); font-size: 16px; font-weight: 600;">Upload Site →</a>
+            <button onclick="clearAndReset()" style="background: none; border: none; color: var(--success); font-size: 16px; font-weight: 600; cursor: pointer;">Register Another →</button>
           </div>
         `;
         // Save to localStorage for persistence

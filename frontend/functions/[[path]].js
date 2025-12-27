@@ -11,16 +11,18 @@ export async function onRequest(context) {
   }
 
   // Handle /item/0x... or /view/0x... routes - serve item page
-  if (path.startsWith('/item/') || path.startsWith('/view/')) {
-    const itemPage = await context.env.ASSETS.fetch(new URL('/item/index.html', url.origin));
+  if ((path.startsWith('/item/') && path !== '/item/') || path.startsWith('/view/')) {
+    url.pathname = '/item/';
+    const itemPage = await context.env.ASSETS.fetch(new Request(url.toString(), context.request));
     return new Response(itemPage.body, {
       headers: { 'Content-Type': 'text/html' }
     });
   }
 
   // Handle /address/0x... routes - serve address page
-  if (path.startsWith('/address/')) {
-    const addressPage = await context.env.ASSETS.fetch(new URL('/address/index.html', url.origin));
+  if (path.startsWith('/address/') && path !== '/address/') {
+    url.pathname = '/address/';
+    const addressPage = await context.env.ASSETS.fetch(new Request(url.toString(), context.request));
     return new Response(addressPage.body, {
       headers: { 'Content-Type': 'text/html' }
     });
@@ -42,7 +44,8 @@ export async function onRequest(context) {
 
   // Check if it's an Ethereum address (0x + 40 hex chars)
   if (/^0x[a-fA-F0-9]{40}$/i.test(segment)) {
-    const addressPage = await context.env.ASSETS.fetch(new URL('/address/index.html', url.origin));
+    url.pathname = '/address/';
+    const addressPage = await context.env.ASSETS.fetch(new Request(url.toString(), context.request));
     return new Response(addressPage.body, {
       headers: { 'Content-Type': 'text/html' }
     });
@@ -50,7 +53,8 @@ export async function onRequest(context) {
 
   // Check if it's a hash (0x + 64 hex chars)
   if (/^0x[a-fA-F0-9]{64}$/i.test(segment)) {
-    const itemPage = await context.env.ASSETS.fetch(new URL('/item/index.html', url.origin));
+    url.pathname = '/item/';
+    const itemPage = await context.env.ASSETS.fetch(new Request(url.toString(), context.request));
     return new Response(itemPage.body, {
       headers: { 'Content-Type': 'text/html' }
     });
@@ -64,7 +68,8 @@ export async function onRequest(context) {
 
       if (!data.available && data.owner) {
         // Name is registered, show the owner's wallet
-        const addressPage = await context.env.ASSETS.fetch(new URL('/address/index.html', url.origin));
+        url.pathname = '/address/';
+        const addressPage = await context.env.ASSETS.fetch(new Request(url.toString(), context.request));
         return new Response(addressPage.body, {
           headers: { 'Content-Type': 'text/html' }
         });
@@ -75,7 +80,8 @@ export async function onRequest(context) {
   }
 
   // Return 404 page
-  const notFoundPage = await context.env.ASSETS.fetch(new URL('/404.html', url.origin));
+  url.pathname = '/404.html';
+  const notFoundPage = await context.env.ASSETS.fetch(new Request(url.toString(), context.request));
   return new Response(notFoundPage.body, {
     status: 404,
     headers: { 'Content-Type': 'text/html' }
