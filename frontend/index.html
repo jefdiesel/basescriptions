@@ -728,7 +728,7 @@
         }
 
         const cards = data.ethscriptions.map(e => `
-          <div class="inscription-card" onclick="window.location='/item/?id=${e.id}'">
+          <div class="inscription-card" onclick="window.location='/item/${e.id}'">
             <div class="inscription-content">${escapeHtml(e.content_uri.replace('data:,', ''))}</div>
             <div class="inscription-meta">
               <span>Owner: ${e.current_owner.slice(0, 8)}...${e.current_owner.slice(-6)}</span>
