@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wallet | Basescriptions</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --bg2: #141414;
+      --border: #2a2a2a;
+      --text: #e0e0e0;
+      --text2: #888;
+      --accent: #0052FF;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 30px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+
+    .wallet-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+    .wallet-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, var(--accent) 0%, #30E000 100%);
+      border-radius: 50%;
+    }
+    .wallet-address {
+      font-size: 24px;
+      font-weight: bold;
+      word-break: break-all;
+    }
+    .wallet-link {
+      font-size: 14px;
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .tab {
+      padding: 10px 20px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text2);
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .tab:hover:not(.active) { border-color: var(--accent); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .item-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .item-card:hover { border-color: var(--accent); }
+    .item-content {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      word-break: break-all;
+      color: var(--accent);
+    }
+    .item-meta {
+      font-size: 12px;
+      color: var(--text2);
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .page-btn {
+      padding: 10px 20px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .page-btn:hover:not(:disabled) { border-color: var(--accent); }
+
+    .empty { text-align: center; padding: 60px; color: var(--text2); }
+    .loading { text-align: center; padding: 60px; color: var(--text2); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="logo">
+        <div class="logo-icon">B</div>
+        <span>Basescriptions</span>
+      </a>
+    </header>
+
+    <div class="wallet-header">
+      <div class="wallet-icon"></div>
+      <div>
+        <div class="wallet-address" id="walletAddress">Loading...</div>
+        <a class="wallet-link" id="basescanLink" href="#" target="_blank">View on BaseScan</a>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="owned">Owned</button>
+      <button class="tab" data-tab="created">Created</button>
+    </div>
+
+    <div id="content">
+      <div class="loading">Loading inscriptions...</div>
+    </div>
+
+    <div class="pagination" id="pagination" style="display: none;">
+      <button class="page-btn" id="prevBtn">&larr; Prev</button>
+      <span id="pageInfo" style="color: var(--text2);">Page 1</span>
+      <button class="page-btn" id="nextBtn">Next &rarr;</button>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://basescriptions-api.wrapit.workers.dev';
+
+    const params = new URLSearchParams(window.location.search);
+    let address = params.get('address');
+
+    // Also check path
+    if (!address) {
+      const path = window.location.pathname;
+      const match = path.match(/0x[a-fA-F0-9]{40}/);
+      if (match) address = match[0];
+    }
+
+    if (!address) {
+      document.getElementById('content').innerHTML = '<div class="empty">No address provided</div>';
+    } else {
+      document.getElementById('walletAddress').textContent = address.slice(0, 10) + '...' + address.slice(-8);
+      document.getElementById('basescanLink').href = `https://basescan.org/address/${address}`;
+      document.title = `${address.slice(0, 10)}... | Basescriptions`;
+
+      let currentTab = 'owned';
+      let currentPage = 1;
+      const perPage = 24;
+
+      loadItems();
+
+      // Tab switching
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          currentTab = tab.dataset.tab;
+          currentPage = 1;
+          loadItems();
+        });
+      });
+
+      // Pagination
+      document.getElementById('prevBtn').addEventListener('click', () => { currentPage--; loadItems(); });
+      document.getElementById('nextBtn').addEventListener('click', () => { currentPage++; loadItems(); });
+
+      async function loadItems() {
+        const offset = (currentPage - 1) * perPage;
+        const endpoint = currentTab === 'owned' ? 'owned' : 'created';
+
+        try {
+          const res = await fetch(`${API_BASE}/${endpoint}/${address}?limit=${perPage}&offset=${offset}`);
+          const data = await res.json();
+
+          if (!data.ethscriptions || data.ethscriptions.length === 0) {
+            document.getElementById('content').innerHTML = '<div class="empty">No inscriptions found</div>';
+            document.getElementById('pagination').style.display = 'none';
+            return;
+          }
+
+          document.getElementById('content').innerHTML = `
+            <div class="grid">
+              ${data.ethscriptions.map(e => {
+                const content = e.content_uri?.replace(/^data:[^,]*,/, '') || '';
+                return `
+                  <div class="item-card" onclick="window.location='/item/?id=${e.id}'">
+                    <div class="item-content">${escapeHtml(content.slice(0, 15))}</div>
+                    <div class="item-meta">Block ${e.creation_block?.toLocaleString()}</div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          `;
+
+          const totalPages = Math.ceil((data.total || data.ethscriptions.length) / perPage);
+          document.getElementById('pagination').style.display = 'flex';
+          document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+          document.getElementById('prevBtn').disabled = currentPage <= 1;
+          document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+
+        } catch (e) {
+          console.error(e);
+          document.getElementById('content').innerHTML = '<div class="empty">Error loading inscriptions</div>';
+        }
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text || '';
+        return div.innerHTML;
+      }
+    }
+  </script>
+</body>
+</html>

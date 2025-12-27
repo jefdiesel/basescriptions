@@ -361,10 +361,29 @@
 
     async function scanForNames() {
       try {
-        const res = await fetch(`${API_BASE}/owned/${wallet}?limit=100`);
-        const data = await res.json();
+        // Fetch all names with pagination
+        let allEthscriptions = [];
+        let offset = 0;
+        const limit = 100;
+        let hasMore = true;
 
-        ownedNames = (data.ethscriptions || [])
+        document.getElementById('nameCount').textContent = 'Scanning wallet...';
+
+        while (hasMore) {
+          const res = await fetch(`${API_BASE}/owned/${wallet}?limit=${limit}&offset=${offset}`);
+          const data = await res.json();
+
+          if (data.ethscriptions && data.ethscriptions.length > 0) {
+            allEthscriptions = allEthscriptions.concat(data.ethscriptions);
+            offset += limit;
+            hasMore = data.ethscriptions.length === limit;
+            document.getElementById('nameCount').textContent = `Scanning... (${allEthscriptions.length} found)`;
+          } else {
+            hasMore = false;
+          }
+        }
+
+        ownedNames = allEthscriptions
           .filter(e => e.content_uri?.startsWith('data:,'))
           .map(e => ({
             name: e.content_uri.replace('data:,', ''),

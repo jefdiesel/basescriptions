@@ -319,7 +319,8 @@
           hint.textContent = '';
         }
       } catch (e) {
-        statusArea.innerHTML = `<div class="status-box taken"><p>Error checking name</p></div>`;
+        console.error('Name check error:', e);
+        statusArea.innerHTML = `<div class="status-box taken"><p>Error checking name: ${e.message || 'Network error'}</p></div>`;
       }
 
       checkBtn.disabled = false;
@@ -345,48 +346,72 @@
       }
 
       claimBtn.disabled = true;
-      claimBtn.innerHTML = '<span class="loading"></span> Confirm in wallet...';
+      claimBtn.innerHTML = '<span class="loading"></span> Connecting...';
 
       try {
+        // Step 1: Connect wallet
+        console.log('Requesting accounts...');
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if (!accounts || !accounts[0]) {
+          throw new Error('No account connected');
+        }
+        const account = accounts[0];
+        console.log('Connected:', account);
 
-        // Switch to Base
-        try {
-          await window.ethereum.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: BASE_CHAIN_ID }]
-          });
-        } catch (switchError) {
-          if (switchError.code === 4902) {
+        // Step 2: Check current chain
+        claimBtn.innerHTML = '<span class="loading"></span> Checking network...';
+        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        console.log('Current chain:', chainId);
+
+        // Step 3: Switch to Base if needed
+        if (chainId !== BASE_CHAIN_ID) {
+          claimBtn.innerHTML = '<span class="loading"></span> Switch to Base...';
+          try {
             await window.ethereum.request({
-              method: 'wallet_addEthereumChain',
-              params: [{
-                chainId: BASE_CHAIN_ID,
-                chainName: 'Base',
-                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
-                rpcUrls: ['https://mainnet.base.org'],
-                blockExplorerUrls: ['https://basescan.org']
-              }]
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: BASE_CHAIN_ID }]
             });
+          } catch (switchError) {
+            if (switchError.code === 4902) {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: BASE_CHAIN_ID,
+                  chainName: 'Base',
+                  nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                  rpcUrls: ['https://mainnet.base.org'],
+                  blockExplorerUrls: ['https://basescan.org']
+                }]
+              });
+            } else if (switchError.code === 4001) {
+              throw new Error('Please switch to Base network');
+            } else {
+              throw switchError;
+            }
           }
+          // Small delay after chain switch
+          await new Promise(r => setTimeout(r, 500));
         }
 
-        // Create calldata
+        // Step 4: Send transaction
+        claimBtn.innerHTML = '<span class="loading"></span> Confirm in wallet...';
         const content = `data:,${currentName}`;
         const hex = '0x' + Array.from(new TextEncoder().encode(content))
           .map(b => b.toString(16).padStart(2, '0'))
           .join('');
 
+        console.log('Sending tx for:', currentName);
         const tx = await window.ethereum.request({
           method: 'eth_sendTransaction',
           params: [{
-            from: accounts[0],
-            to: accounts[0],
+            from: account,
+            to: account,
             data: hex,
             value: '0x0'
           }]
         });
 
+        console.log('TX sent:', tx);
         statusArea.innerHTML = `
           <div class="status-box success">
             <h3 style="color: var(--success)">✓ ${currentName}.basescriptions.com is yours!</h3>
@@ -401,7 +426,9 @@
         hint.innerHTML = `<a href="/upload/?name=${currentName}" style="color: var(--accent); font-size: 16px; font-weight: 600;">Upload Your Site →</a>`;
 
       } catch (e) {
-        statusArea.innerHTML = `<div class="status-box taken"><p>${e.message}</p></div>`;
+        console.error('Claim error:', e);
+        const errMsg = e.message || e.reason || (e.data?.message) || 'Unknown error';
+        statusArea.innerHTML = `<div class="status-box taken"><p>Error: ${errMsg}</p></div>`;
         claimBtn.disabled = false;
         claimBtn.textContent = 'Connect & Claim on Base';
       }

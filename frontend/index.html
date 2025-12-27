@@ -371,6 +371,58 @@
       color: var(--text-secondary);
     }
 
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    .page-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .page-btn:hover:not(:disabled) {
+      border-color: var(--accent-blue);
+      background: var(--accent-blue);
+    }
+
+    .page-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .page-info {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .load-more {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      padding: 40px;
+      color: var(--text-secondary);
+    }
+
+    .loading-spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent-blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
     @media (max-width: 768px) {
       .hero h1 {
         font-size: 36px;
@@ -396,7 +448,6 @@
       <nav>
         <a href="/register/">Register</a>
         <a href="/upload/">Upload</a>
-        <a href="/view/">View</a>
         <a href="#recent">Recent</a>
       </nav>
       <button class="connect-btn" id="connectBtn">Connect Wallet</button>
@@ -455,6 +506,10 @@
         </div>
         <div class="recent-grid" id="recentGrid">
           <div class="empty-state">Loading...</div>
+        </div>
+        <div class="load-more" id="loadMore" style="display: none;">
+          <div class="loading-spinner"></div>
+          <span>Loading more...</span>
         </div>
       </div>
     </section>
@@ -638,19 +693,42 @@
       }
     }
 
-    // Load recent
-    async function loadRecent() {
+    // Infinite scroll state
+    const perPage = 24;
+    let currentOffset = 0;
+    let isLoading = false;
+    let hasMore = true;
+    const loadMoreEl = document.getElementById('loadMore');
+
+    // Load recent inscriptions (appends on scroll)
+    async function loadRecent(reset = false) {
+      if (isLoading || (!hasMore && !reset)) return;
+
+      if (reset) {
+        currentOffset = 0;
+        hasMore = true;
+        recentGrid.innerHTML = '';
+      }
+
+      isLoading = true;
+      loadMoreEl.style.display = 'flex';
+
       try {
-        const res = await fetch(`${API_BASE}/recent?limit=12`);
+        const res = await fetch(`${API_BASE}/recent?limit=${perPage}&offset=${currentOffset}`);
         const data = await res.json();
 
         if (!data.ethscriptions || data.ethscriptions.length === 0) {
-          recentGrid.innerHTML = '<div class="empty-state">No inscriptions indexed yet. Backfill in progress...</div>';
+          hasMore = false;
+          if (currentOffset === 0) {
+            recentGrid.innerHTML = '<div class="empty-state">No inscriptions indexed yet. Backfill in progress...</div>';
+          }
+          loadMoreEl.style.display = 'none';
+          isLoading = false;
           return;
         }
 
-        recentGrid.innerHTML = data.ethscriptions.map(e => `
-          <div class="inscription-card">
+        const cards = data.ethscriptions.map(e => `
+          <div class="inscription-card" onclick="window.location='/item/?id=${e.id}'">
             <div class="inscription-content">${escapeHtml(e.content_uri.replace('data:,', ''))}</div>
             <div class="inscription-meta">
               <span>Owner: ${e.current_owner.slice(0, 8)}...${e.current_owner.slice(-6)}</span>
@@ -658,11 +736,40 @@
             </div>
           </div>
         `).join('');
+
+        recentGrid.insertAdjacentHTML('beforeend', cards);
+        currentOffset += data.ethscriptions.length;
+
+        // Check if there are more items
+        if (data.ethscriptions.length < perPage || (data.total && currentOffset >= data.total)) {
+          hasMore = false;
+        }
       } catch (error) {
         console.error(error);
-        recentGrid.innerHTML = '<div class="empty-state">Error loading recent inscriptions</div>';
+        if (currentOffset === 0) {
+          recentGrid.innerHTML = '<div class="empty-state">Error loading inscriptions</div>';
+        }
+      }
+
+      loadMoreEl.style.display = 'none';
+      isLoading = false;
+    }
+
+    // Infinite scroll detection
+    function onScroll() {
+      if (isLoading || !hasMore) return;
+
+      const scrollY = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const docHeight = document.documentElement.scrollHeight;
+
+      // Load more when within 400px of bottom
+      if (scrollY + windowHeight >= docHeight - 400) {
+        loadRecent();
       }
     }
+
+    window.addEventListener('scroll', onScroll);
 
     function escapeHtml(text) {
       const div = document.createElement('div');
@@ -674,9 +781,8 @@
     loadStats();
     loadRecent();
 
-    // Auto-refresh
+    // Auto-refresh stats only (don't reset scroll position)
     setInterval(loadStats, 30000);
-    setInterval(loadRecent, 30000);
   </script>
 </body>
 </html>

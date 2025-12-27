@@ -177,7 +177,7 @@ app.get('/stats', async (c) => {
   const [ethscriptions, transfers, state] = await Promise.all([
     db.from('base_ethscriptions').select('*', { count: 'exact', head: true }),
     db.from('base_transfers').select('*', { count: 'exact', head: true }),
-    db.from('indexer_state').select('*').eq('key', 'last_block').single()
+    db.from('indexer_state').select('*').eq('key', 'base_ethscriptions').single()
   ])
 
   return c.json({
@@ -188,18 +188,22 @@ app.get('/stats', async (c) => {
   })
 })
 
-// GET /recent - Recent ethscriptions
+// GET /recent - Recent ethscriptions with pagination
 app.get('/recent', async (c) => {
   const limit = parseInt(c.req.query('limit') || '50')
+  const offset = parseInt(c.req.query('offset') || '0')
 
   const db = getDb(c)
-  const { data } = await db
+  const { data, count } = await db
     .from('base_ethscriptions')
-    .select('*')
+    .select('*', { count: 'exact' })
     .order('creation_block', { ascending: false })
-    .limit(limit)
+    .range(offset, offset + limit - 1)
 
   return c.json({
+    total: count || 0,
+    limit,
+    offset,
     ethscriptions: data || []
   })
 })
