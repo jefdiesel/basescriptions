@@ -369,16 +369,16 @@
       image-rendering: crisp-edges;
     }
 
+    .html-card {
+      background: #fff !important;
+      padding: 0 !important;
+    }
+
     .inscription-iframe {
-      width: 560px;
-      height: 560px;
+      width: 100%;
+      height: 100%;
       border: none;
-      border-radius: 8px;
-      background: #e8e8e8;
       pointer-events: none;
-      transform: scale(0.32);
-      transform-origin: top left;
-      margin-bottom: -380px;
     }
 
     /* Footer */
@@ -1075,31 +1075,43 @@
           return;
         }
 
-        const cards = data.ethscriptions.map(e => {
-          const contentUri = e.content_uri || '';
-          const isImage = contentUri.startsWith('data:image/');
-          const isHtml = contentUri.startsWith('data:text/html');
+        const cards = await Promise.all(data.ethscriptions.map(async e => {
+          let contentUri = e.content_uri || '';
+          const contentType = e.content_type || '';
+          const isImage = contentUri.startsWith('data:image/') || contentType.startsWith('image/');
+          const isHtml = contentUri.startsWith('data:text/html') || contentType === 'text/html';
           const isPixelArt = contentUri.includes('pixelart=1');
+
+          // Fetch full calldata from chain for HTML (database truncates)
+          if (isHtml && e.creation_tx) {
+            try {
+              const rpcRes = await fetch('https://mainnet.base.org', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  jsonrpc: '2.0', id: 1,
+                  method: 'eth_getTransactionByHash',
+                  params: [e.creation_tx]
+                })
+              });
+              const rpcData = await rpcRes.json();
+              if (rpcData.result && rpcData.result.input) {
+                contentUri = parseCalldata(rpcData.result.input);
+              }
+            } catch (err) { console.error(err); }
+          }
 
           if (isImage) {
             const pixelClass = isPixelArt ? 'pixel-art' : '';
             return `
               <div class="inscription-card" onclick="window.location='/item/${e.id}'">
                 <img src="${contentUri}" class="inscription-image ${pixelClass}" alt="Inscription" />
-                <div class="inscription-meta">
-                  <span>Owner: ${e.current_owner.slice(0, 8)}...${e.current_owner.slice(-6)}</span>
-                  <span>Block: ${e.creation_block.toLocaleString()}</span>
-                </div>
               </div>
             `;
           } else if (isHtml) {
             return `
-              <div class="inscription-card" onclick="window.location='/item/${e.id}'" data-html="${contentUri.replace(/"/g, '&quot;')}">
-                <iframe class="inscription-iframe"></iframe>
-                <div class="inscription-meta">
-                  <span>Owner: ${e.current_owner.slice(0, 8)}...${e.current_owner.slice(-6)}</span>
-                  <span>Block: ${e.creation_block.toLocaleString()}</span>
-                </div>
+              <div class="inscription-card html-card" onclick="window.location='/item/${e.id}'">
+                <iframe class="inscription-iframe" src="${contentUri}" sandbox="allow-scripts allow-same-origin"></iframe>
               </div>
             `;
           } else {
@@ -1108,32 +1120,12 @@
             return `
               <div class="inscription-card" onclick="window.location='/item/${e.id}'">
                 <div class="inscription-content">${escapeHtml(truncated)}</div>
-                <div class="inscription-meta">
-                  <span>Owner: ${e.current_owner.slice(0, 8)}...${e.current_owner.slice(-6)}</span>
-                  <span>Block: ${e.creation_block.toLocaleString()}</span>
-                </div>
               </div>
             `;
           }
-        }).join('');
+        }));
 
-        recentGrid.insertAdjacentHTML('beforeend', cards);
-
-        // Process HTML iframes
-        recentGrid.querySelectorAll('[data-html]').forEach(card => {
-          const iframe = card.querySelector('iframe');
-          const dataUri = card.dataset.html;
-          if (iframe && dataUri) {
-            let htmlContent = '';
-            if (dataUri.includes('base64,')) {
-              htmlContent = atob(dataUri.split('base64,')[1]);
-            } else {
-              htmlContent = decodeURIComponent(dataUri.split(',')[1] || '');
-            }
-            iframe.srcdoc = htmlContent;
-            card.removeAttribute('data-html');
-          }
-        });
+        recentGrid.insertAdjacentHTML('beforeend', cards.join(''));
 
         currentOffset += data.ethscriptions.length;
 
@@ -1172,6 +1164,13 @@
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
+    }
+
+    function parseCalldata(input) {
+      if (!input || input === '0x') return '';
+      const hex = input.startsWith('0x') ? input.slice(2) : input;
+      const bytes = new Uint8Array(hex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+      return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
     }
 
     // Init

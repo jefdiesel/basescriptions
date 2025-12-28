@@ -123,16 +123,15 @@
       image-rendering: pixelated;
       image-rendering: crisp-edges;
     }
+    .html-card {
+      background: #fff !important;
+      padding: 0 !important;
+    }
     .item-iframe {
-      width: 500px;
-      height: 500px;
+      width: 100%;
+      height: 100%;
       border: none;
-      border-radius: 8px;
-      background: #e8e8e8;
       pointer-events: none;
-      transform: scale(0.35);
-      transform-origin: top left;
-      margin-bottom: -320px;
     }
     .item-meta {
       font-size: 12px;
@@ -424,9 +423,8 @@
               `;
             } else if (isHtml) {
               return `
-                <div class="item-card" onclick="window.location='/item/${e.id}'" data-html="${contentUri.replace(/"/g, '&quot;')}">
-                  <iframe class="item-iframe"></iframe>
-                  <div class="item-meta">Block ${e.creation_block?.toLocaleString()}</div>
+                <div class="item-card html-card" onclick="window.location='/item/${e.id}'">
+                  <iframe class="item-iframe" src="${contentUri}" sandbox="allow-scripts allow-same-origin"></iframe>
                 </div>
               `;
             } else {
@@ -442,22 +440,6 @@
           }).join('');
 
           document.getElementById('grid').insertAdjacentHTML('beforeend', cards);
-
-          // Process HTML iframes
-          document.querySelectorAll('[data-html]').forEach(card => {
-            const iframe = card.querySelector('iframe');
-            const dataUri = card.dataset.html;
-            if (iframe && dataUri) {
-              let htmlContent = '';
-              if (dataUri.includes('base64,')) {
-                htmlContent = atob(dataUri.split('base64,')[1]);
-              } else {
-                htmlContent = decodeURIComponent(dataUri.split(',')[1] || '');
-              }
-              iframe.srcdoc = htmlContent;
-              card.removeAttribute('data-html');
-            }
-          });
 
           currentOffset += data.ethscriptions.length;
 

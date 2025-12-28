@@ -72,11 +72,9 @@
       flex-shrink: 0;
     }
     .preview-box iframe {
-      width: 800px;
-      height: 800px;
+      width: 100%;
+      height: 400px;
       border: none;
-      transform: scale(0.5);
-      transform-origin: top left;
     }
     .preview-box img {
       max-width: 100%;
@@ -460,6 +458,23 @@
           return;
         }
 
+        // Fetch full calldata from chain (database may truncate)
+        if (data.creation_tx) {
+          const rpcRes = await fetch('https://mainnet.base.org', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jsonrpc: '2.0', id: 1,
+              method: 'eth_getTransactionByHash',
+              params: [data.creation_tx]
+            })
+          });
+          const rpcData = await rpcRes.json();
+          if (rpcData.result && rpcData.result.input) {
+            data.content_uri = parseCalldata(rpcData.result.input);
+          }
+        }
+
         inscriptionData = data;
         renderInscription(data);
         updateTransferButton();
@@ -469,11 +484,18 @@
       }
     }
 
+    function parseCalldata(input) {
+      if (!input || input === '0x') return '';
+      const hex = input.startsWith('0x') ? input.slice(2) : input;
+      const bytes = new Uint8Array(hex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+      return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+    }
+
     function renderInscription(data) {
       const content = data.content_uri || '';
       const isName = content.startsWith('data:,') && /^[a-z0-9-]+$/.test(content.replace('data:,', ''));
       const nameText = content.replace(/^data:[^,]*,/, '');
-      const displayTitle = isName ? nameText : `Block ${data.creation_block?.toLocaleString()}`;
+      const displayTitle = isName ? nameText : `Inscription #${data.inscription_number || '?'}`;
       const created = timeAgo(data.creation_timestamp || data.created_at);
 
       document.title = `${displayTitle} | Basescriptions`;
@@ -485,7 +507,7 @@
         const pixelClass = isPixelArt ? 'pixel-art' : '';
         preview = `<img src="${content}" alt="Inscription" class="${pixelClass}">`;
       } else if (content.startsWith('data:text/html')) {
-        preview = `<iframe id="htmlPreview" data-content="${content.replace(/"/g, '&quot;')}"></iframe>`;
+        preview = `<iframe src="${content}" sandbox="allow-scripts allow-same-origin"></iframe>`;
       } else {
         preview = `<div class="preview-text">${escapeHtml(nameText)}</div>`;
       }
@@ -565,18 +587,6 @@
 
       document.getElementById('content').innerHTML = html;
 
-      // Process HTML iframe
-      const htmlPreview = document.getElementById('htmlPreview');
-      if (htmlPreview && htmlPreview.dataset.content) {
-        const dataUri = htmlPreview.dataset.content;
-        let htmlContent = '';
-        if (dataUri.includes('base64,')) {
-          htmlContent = atob(dataUri.split('base64,')[1]);
-        } else {
-          htmlContent = decodeURIComponent(dataUri.split(',')[1] || '');
-        }
-        htmlPreview.srcdoc = htmlContent;
-      }
     }
 
     function escapeHtml(text) {
