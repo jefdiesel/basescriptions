@@ -483,7 +483,7 @@
         const pixelClass = isPixelArt ? 'pixel-art' : '';
         preview = `<img src="${content}" alt="Inscription" class="${pixelClass}">`;
       } else if (content.startsWith('data:text/html')) {
-        preview = `<iframe src="${content}"></iframe>`;
+        preview = `<iframe id="htmlPreview" data-content="${content.replace(/"/g, '&quot;')}"></iframe>`;
       } else {
         preview = `<div class="preview-text">${escapeHtml(nameText)}</div>`;
       }
@@ -562,6 +562,19 @@
       `;
 
       document.getElementById('content').innerHTML = html;
+
+      // Process HTML iframe
+      const htmlPreview = document.getElementById('htmlPreview');
+      if (htmlPreview && htmlPreview.dataset.content) {
+        const dataUri = htmlPreview.dataset.content;
+        let htmlContent = '';
+        if (dataUri.includes('base64,')) {
+          htmlContent = atob(dataUri.split('base64,')[1]);
+        } else {
+          htmlContent = decodeURIComponent(dataUri.split(',')[1] || '');
+        }
+        htmlPreview.srcdoc = htmlContent;
+      }
     }
 
     function escapeHtml(text) {

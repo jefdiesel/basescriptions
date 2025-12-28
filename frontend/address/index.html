@@ -422,8 +422,8 @@
               `;
             } else if (isHtml) {
               return `
-                <div class="item-card" onclick="window.location='/item/${e.id}'">
-                  <iframe src="${contentUri}" class="item-iframe"></iframe>
+                <div class="item-card" onclick="window.location='/item/${e.id}'" data-html="${contentUri.replace(/"/g, '&quot;')}">
+                  <iframe class="item-iframe"></iframe>
                   <div class="item-meta">Block ${e.creation_block?.toLocaleString()}</div>
                 </div>
               `;
@@ -440,6 +440,23 @@
           }).join('');
 
           document.getElementById('grid').insertAdjacentHTML('beforeend', cards);
+
+          // Process HTML iframes
+          document.querySelectorAll('[data-html]').forEach(card => {
+            const iframe = card.querySelector('iframe');
+            const dataUri = card.dataset.html;
+            if (iframe && dataUri) {
+              let htmlContent = '';
+              if (dataUri.includes('base64,')) {
+                htmlContent = atob(dataUri.split('base64,')[1]);
+              } else {
+                htmlContent = decodeURIComponent(dataUri.split(',')[1] || '');
+              }
+              iframe.srcdoc = htmlContent;
+              card.removeAttribute('data-html');
+            }
+          });
+
           currentOffset += data.ethscriptions.length;
 
           if (data.ethscriptions.length < perPage || (data.total && currentOffset >= data.total)) {
