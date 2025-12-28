@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Listing | Basescriptions Marketplace</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --bg2: #141414;
+      --border: #2a2a2a;
+      --text: #e0e0e0;
+      --text2: #888;
+      --accent: #0052FF;
+      --success: #30E000;
+      --danger: #ff4444;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    header .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    nav { display: flex; gap: 24px; align-items: center; }
+    nav a { color: var(--text2); text-decoration: none; font-size: 14px; }
+    nav a:hover, nav a.active { color: var(--accent); }
+    .connect-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    .back-link {
+      color: var(--text2);
+      text-decoration: none;
+      display: inline-block;
+      margin-bottom: 24px;
+    }
+    .back-link:hover { color: var(--text); }
+
+    .listing-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+
+    .listing-info {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .listing-name {
+      font-size: 36px;
+      font-weight: bold;
+      color: var(--accent);
+      font-family: monospace;
+      margin-bottom: 24px;
+    }
+    .info-row {
+      margin-bottom: 16px;
+    }
+    .info-label {
+      color: var(--text2);
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    .info-value {
+      font-size: 16px;
+    }
+    .info-value.price {
+      font-size: 28px;
+      font-weight: bold;
+    }
+    .info-value.mono {
+      font-family: monospace;
+      font-size: 12px;
+      word-break: break-all;
+      color: var(--text2);
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .status-badge.active { background: #1e4620; color: #4ade80; }
+    .status-badge.sold { background: #4a1e1e; color: #f87171; }
+
+    .actions-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .action-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .action-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 16px;
+    }
+
+    .buy-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .buy-btn:hover { opacity: 0.9; }
+    .buy-btn:disabled {
+      background: var(--bg);
+      color: var(--text2);
+      cursor: not-allowed;
+    }
+    .buy-hint {
+      text-align: center;
+      color: var(--text2);
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .offer-row {
+      display: flex;
+      gap: 8px;
+    }
+    .offer-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      color: var(--text);
+      font-size: 16px;
+    }
+    .offer-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .offer-btn {
+      background: #1e3a5f;
+      color: #60a5fa;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .offer-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .offer-hint {
+      color: var(--text2);
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .offers-list {
+      margin-top: 16px;
+    }
+    .offer-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: var(--bg);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .offer-buyer {
+      font-family: monospace;
+      font-size: 13px;
+    }
+    .offer-amount {
+      font-weight: bold;
+    }
+    .offer-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .accept-btn {
+      background: var(--success);
+      color: #000;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .cancel-btn {
+      background: var(--danger);
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .message {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .message.error {
+      background: #4a1e1e;
+      border: 1px solid var(--danger);
+      color: #f87171;
+    }
+    .message.success {
+      background: #1e4620;
+      border: 1px solid var(--success);
+      color: #4ade80;
+    }
+
+    .owner-notice {
+      background: #4a3f1e;
+      border: 1px solid #fbbf24;
+      color: #fbbf24;
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text2);
+    }
+
+    @media (max-width: 768px) {
+      .listing-grid { grid-template-columns: 1fr; }
+      nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <a href="/" class="logo">
+        <div class="logo-icon">B</div>
+        <span>Basescriptions</span>
+      </a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/marketplace/" class="active">Marketplace</a>
+      </nav>
+      <button class="connect-btn" id="connectBtn">Connect Wallet</button>
+    </div>
+  </header>
+
+  <main>
+    <a href="/marketplace/" class="back-link">&larr; Back to marketplace</a>
+
+    <div id="content">
+      <div class="loading">Loading listing...</div>
+    </div>
+  </main>
+
+  <script>
+    const API_BASE = 'https://basescriptions-api.wrapit.workers.dev';
+    const BASE_CHAIN_ID = '0x2105';
+
+    let address = null;
+    let listing = null;
+    let offers = [];
+
+    // Get listing ID from URL
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    const listingId = pathParts[pathParts.length - 1];
+
+    // If we came from ?id= redirect, clean URL
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('id') && window.location.pathname === '/marketplace/item/') {
+      history.replaceState(null, '', '/marketplace/' + params.get('id'));
+    }
+
+    const connectBtn = document.getElementById('connectBtn');
+    const content = document.getElementById('content');
+
+    // Init
+    checkWallet();
+    fetchListing();
+
+    async function checkWallet() {
+      if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          if (accounts && accounts[0]) {
+            address = accounts[0].toLowerCase();
+            updateWalletUI();
+          }
+        } catch (e) {}
+      }
+    }
+
+    async function connectWallet() {
+      if (!window.ethereum) {
+        alert('Please install MetaMask or another wallet');
+        return;
+      }
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if (accounts && accounts[0]) {
+          address = accounts[0].toLowerCase();
+          updateWalletUI();
+          renderListing();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function updateWalletUI() {
+      if (address) {
+        connectBtn.textContent = address.slice(0, 6) + '...' + address.slice(-4);
+        connectBtn.style.background = 'var(--bg2)';
+        connectBtn.style.color = 'var(--text2)';
+      }
+    }
+
+    connectBtn.addEventListener('click', () => {
+      if (!address) connectWallet();
+    });
+
+    async function fetchListing() {
+      try {
+        const res = await fetch(`${API_BASE}/marketplace/listing/${listingId}`);
+        const data = await res.json();
+
+        if (data.listing) {
+          listing = data.listing;
+          offers = data.offers || [];
+          renderListing();
+        } else {
+          content.innerHTML = `
+            <div class="loading">
+              <p>Listing not found</p>
+              <a href="/marketplace/" style="color: var(--accent);">Back to marketplace</a>
+            </div>
+          `;
+        }
+      } catch (e) {
+        console.error(e);
+        content.innerHTML = '<div class="loading">Error loading listing</div>';
+      }
+    }
+
+    function renderListing() {
+      const isOwner = address && listing.seller_address.toLowerCase() === address;
+      const isSold = listing.status === 'sold';
+
+      content.innerHTML = `
+        <div class="listing-grid">
+          <div class="listing-info">
+            <div class="listing-name">${escapeHtml(listing.name)}</div>
+
+            <div class="info-row">
+              <div class="info-label">Price</div>
+              <div class="info-value price">${parseFloat(listing.price_eth).toFixed(4)} ETH</div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-label">Seller</div>
+              <div class="info-value mono">${listing.seller_address}</div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-label">Status</div>
+              <div class="info-value">
+                <span class="status-badge ${listing.status}">${listing.status.toUpperCase()}</span>
+              </div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-label">Listed</div>
+              <div class="info-value">${new Date(listing.created_at).toLocaleString()}</div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-label">Ethscription ID</div>
+              <div class="info-value mono">${listing.ethscription_id}</div>
+            </div>
+          </div>
+
+          <div class="actions-section">
+            <div id="messageArea"></div>
+
+            ${isSold ? `
+              <div class="action-card">
+                <div style="text-align: center; color: var(--danger); font-size: 24px; font-weight: bold;">SOLD</div>
+              </div>
+            ` : !address ? `
+              <div class="action-card">
+                <div style="text-align: center; margin-bottom: 16px;">Connect wallet to buy or make offers</div>
+                <button class="buy-btn" onclick="connectWallet()">Connect Wallet</button>
+              </div>
+            ` : isOwner ? `
+              <div class="action-card">
+                <div class="owner-notice">This is your listing</div>
+              </div>
+            ` : `
+              <div class="action-card">
+                <div class="action-title">Buy Now</div>
+                <button class="buy-btn" id="buyBtn" onclick="handleBuy()">
+                  Buy for ${parseFloat(listing.price_eth).toFixed(4)} ETH
+                </button>
+                <div class="buy-hint">2.5% platform fee included</div>
+              </div>
+
+              <div class="action-card">
+                <div class="action-title">Make Offer</div>
+                <div class="offer-row">
+                  <input type="number" step="0.0001" placeholder="0.00 ETH" class="offer-input" id="offerInput">
+                  <button class="offer-btn" id="offerBtn" onclick="handleOffer()">Offer</button>
+                </div>
+                <div class="offer-hint">ETH will be locked until accepted or cancelled</div>
+              </div>
+            `}
+
+            ${offers.length > 0 ? `
+              <div class="action-card">
+                <div class="action-title">Offers (${offers.length})</div>
+                <div class="offers-list">
+                  ${offers.map((o, i) => `
+                    <div class="offer-item">
+                      <div>
+                        <div class="offer-buyer">${o.buyer_address.slice(0, 6)}...${o.buyer_address.slice(-4)}
+                          ${address && o.buyer_address.toLowerCase() === address ? '<span style="color: var(--accent);"> (You)</span>' : ''}
+                        </div>
+                        <div style="font-size: 11px; color: var(--text2);">${new Date(o.created_at).toLocaleString()}</div>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 12px;">
+                        <span class="offer-amount">${parseFloat(o.offer_eth).toFixed(4)} ETH</span>
+                        ${isOwner ? `<button class="accept-btn" onclick="handleAcceptOffer('${o.id}')">Accept</button>` : ''}
+                        ${address && o.buyer_address.toLowerCase() === address ? `<button class="cancel-btn" onclick="handleCancelOffer('${o.id}')">Cancel</button>` : ''}
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function showMessage(msg, isError = false) {
+      const area = document.getElementById('messageArea');
+      if (area) {
+        area.innerHTML = `<div class="message ${isError ? 'error' : 'success'}">${msg}</div>`;
+      }
+    }
+
+    async function switchToBase() {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: BASE_CHAIN_ID }]
+        });
+        return true;
+      } catch (e) {
+        if (e.code === 4902) {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: BASE_CHAIN_ID,
+              chainName: 'Base',
+              nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+              rpcUrls: ['https://mainnet.base.org'],
+              blockExplorerUrls: ['https://basescan.org']
+            }]
+          });
+          return true;
+        }
+        throw e;
+      }
+    }
+
+    async function handleBuy() {
+      const buyBtn = document.getElementById('buyBtn');
+      buyBtn.disabled = true;
+      buyBtn.textContent = 'Processing...';
+
+      try {
+        await switchToBase();
+
+        // For now, just transfer ETH to seller (no escrow contract yet)
+        // TODO: Use escrow contract when deployed
+        const priceWei = '0x' + BigInt(listing.price_wei).toString(16);
+
+        const tx = await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: address,
+            to: listing.seller_address,
+            value: priceWei
+          }]
+        });
+
+        // Record sale
+        await fetch(`${API_BASE}/marketplace/listing/${listing.id}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            buyerAddress: address,
+            purchaseTx: tx,
+            salePriceWei: listing.price_wei
+          })
+        });
+
+        showMessage(`Purchase successful! TX: ${tx.slice(0, 20)}...`);
+        setTimeout(() => fetchListing(), 2000);
+      } catch (e) {
+        console.error(e);
+        showMessage(e.message || 'Purchase failed', true);
+        buyBtn.disabled = false;
+        buyBtn.textContent = `Buy for ${parseFloat(listing.price_eth).toFixed(4)} ETH`;
+      }
+    }
+
+    async function handleOffer() {
+      const offerInput = document.getElementById('offerInput');
+      const offerBtn = document.getElementById('offerBtn');
+      const amount = parseFloat(offerInput.value);
+
+      if (!amount || amount <= 0) {
+        showMessage('Enter a valid offer amount', true);
+        return;
+      }
+
+      offerBtn.disabled = true;
+      offerBtn.textContent = '...';
+
+      try {
+        const offerWei = BigInt(Math.floor(amount * 1e18)).toString();
+
+        // Record offer (no escrow yet - just database)
+        const res = await fetch(`${API_BASE}/marketplace/offers`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            listingId: listing.id,
+            buyerAddress: address,
+            offerWei
+          })
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || 'Failed to make offer');
+        }
+
+        showMessage('Offer submitted!');
+        offerInput.value = '';
+        fetchListing();
+      } catch (e) {
+        console.error(e);
+        showMessage(e.message || 'Offer failed', true);
+      }
+
+      offerBtn.disabled = false;
+      offerBtn.textContent = 'Offer';
+    }
+
+    async function handleAcceptOffer(offerId) {
+      try {
+        await fetch(`${API_BASE}/marketplace/offers`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            offerId,
+            action: 'accept',
+            userAddress: address
+          })
+        });
+        showMessage('Offer accepted!');
+        fetchListing();
+      } catch (e) {
+        showMessage(e.message || 'Failed to accept offer', true);
+      }
+    }
+
+    async function handleCancelOffer(offerId) {
+      try {
+        await fetch(`${API_BASE}/marketplace/offers`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            offerId,
+            action: 'cancel',
+            userAddress: address
+          })
+        });
+        showMessage('Offer cancelled');
+        fetchListing();
+      } catch (e) {
+        showMessage(e.message || 'Failed to cancel offer', true);
+      }
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

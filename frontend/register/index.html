@@ -297,6 +297,7 @@
         <a href="/">Home</a>
         <a href="/register/">Register a Name</a>
         <a href="/inscribe/">Inscribe</a>
+        <a href="/upload/">Upload Site</a>
       </div>
       <button class="hamburger" id="hamburger">
         <span></span>
@@ -309,6 +310,7 @@
       <a href="/">Home</a>
       <a href="/register/">Register a Name</a>
       <a href="/inscribe/">Inscribe</a>
+      <a href="/upload/">Upload Site</a>
     </div>
 
     <h1>Claim Your Name</h1>
@@ -400,6 +402,9 @@
               <p><code>data:,${currentName}</code> is not claimed</p>
             </div>
           `;
+          // Reset button state before showing
+          claimBtn.disabled = false;
+          claimBtn.textContent = 'Connect & Claim on Base';
           claimBtn.style.display = 'block';
           hint.textContent = 'This will inscribe data:,' + currentName + ' on Base. Gas is ~$0.001.';
         } else {

@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sell | Basescriptions Marketplace</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --bg2: #141414;
+      --border: #2a2a2a;
+      --text: #e0e0e0;
+      --text2: #888;
+      --accent: #0052FF;
+      --success: #30E000;
+      --danger: #ff4444;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    header .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    .wallet-addr {
+      font-family: monospace;
+      color: var(--text2);
+      font-size: 14px;
+    }
+    .connect-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    main {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    .back-link {
+      color: var(--text2);
+      text-decoration: none;
+      display: inline-block;
+      margin-bottom: 24px;
+    }
+    .back-link:hover { color: var(--text); }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 32px;
+    }
+
+    /* Progress */
+    .progress {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+    .progress-step {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 14px;
+      background: var(--bg2);
+      border: 2px solid var(--border);
+    }
+    .progress-step.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .progress-step.done {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      opacity: 0.6;
+    }
+    .progress-line {
+      width: 40px;
+      height: 2px;
+      background: var(--border);
+    }
+
+    /* Cards */
+    .step-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      display: none;
+    }
+    .step-card.active { display: block; }
+    .step-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 16px;
+    }
+
+    /* Names Grid */
+    .names-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      max-height: 250px;
+      overflow-y: auto;
+      margin-bottom: 16px;
+    }
+    .name-btn {
+      padding: 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: monospace;
+      font-size: 14px;
+      cursor: pointer;
+      text-align: left;
+    }
+    .name-btn:hover { border-color: var(--accent); }
+    .name-btn.selected {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* Price Input */
+    .price-section {
+      margin-top: 24px;
+    }
+    .price-label {
+      color: var(--text2);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+    .price-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      color: var(--text);
+      font-size: 20px;
+    }
+    .price-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .btn {
+      flex: 1;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-primary:disabled {
+      background: var(--bg);
+      color: var(--text2);
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    /* Listing Preview */
+    .listing-preview {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .preview-name {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--accent);
+      font-family: monospace;
+      margin-bottom: 8px;
+    }
+    .preview-price {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .preview-fee {
+      color: var(--text2);
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    /* Messages */
+    .message {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .message.error {
+      background: #4a1e1e;
+      border: 1px solid var(--danger);
+      color: #f87171;
+    }
+    .message.success {
+      background: #1e4620;
+      border: 1px solid var(--success);
+      color: #4ade80;
+    }
+    .message.info {
+      background: #1e3a5f;
+      border: 1px solid #60a5fa;
+      color: #60a5fa;
+    }
+
+    /* Done */
+    .done-icon {
+      font-size: 64px;
+      text-align: center;
+      color: var(--success);
+      margin-bottom: 16px;
+    }
+    .done-title {
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      color: var(--success);
+      margin-bottom: 24px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--text2);
+    }
+    .empty {
+      text-align: center;
+      padding: 40px;
+      color: var(--text2);
+    }
+    .empty a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <a href="/" class="logo">
+        <div class="logo-icon">B</div>
+        <span>Basescriptions</span>
+      </a>
+      <button class="connect-btn" id="connectBtn">Connect Wallet</button>
+    </div>
+  </header>
+
+  <main>
+    <a href="/marketplace/" class="back-link">&larr; Back to marketplace</a>
+
+    <h1>List Name for Sale</h1>
+
+    <!-- Progress -->
+    <div class="progress">
+      <div class="progress-step active" id="step1">1</div>
+      <div class="progress-line"></div>
+      <div class="progress-step" id="step2">2</div>
+      <div class="progress-line"></div>
+      <div class="progress-step" id="step3">3</div>
+    </div>
+
+    <div id="messageArea"></div>
+
+    <!-- Step 1: Select Name -->
+    <div class="step-card active" id="card1">
+      <div class="step-title">1. Select Name to Sell</div>
+
+      <div id="namesContent">
+        <div class="loading">Scanning wallet for names...</div>
+      </div>
+
+      <div class="price-section" id="priceSection" style="display: none;">
+        <div class="price-label">Price (ETH)</div>
+        <input type="number" step="0.0001" placeholder="0.00" class="price-input" id="priceInput">
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="continueBtn" disabled>Continue</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Transfer -->
+    <div class="step-card" id="card2">
+      <div class="step-title">2. Transfer to Marketplace</div>
+
+      <div class="listing-preview" id="previewBox">
+        <div class="preview-name" id="previewName">-</div>
+        <div class="preview-price">Price: <span id="previewPrice">0</span> ETH</div>
+      </div>
+
+      <div class="message info">
+        To list your name, you need to transfer it to the marketplace. This ensures trustless trading - buyers pay and receive the name automatically.
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goToStep(1)">Back</button>
+        <button class="btn btn-primary" id="transferBtn" onclick="handleTransfer()">Transfer Name</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Create Listing -->
+    <div class="step-card" id="card3">
+      <div class="step-title">3. Create Listing</div>
+
+      <div class="message success" id="transferSuccess" style="display: none;">
+        Name transferred successfully!
+      </div>
+
+      <div class="listing-preview">
+        <div class="preview-name" id="finalName">-</div>
+        <div class="preview-price">Price: <span id="finalPrice">0</span> ETH</div>
+        <div class="preview-fee">2.5% fee on sale = <span id="feeAmount">0</span> ETH</div>
+        <div class="preview-fee">You receive = <span id="receiveAmount">0</span> ETH</div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="listBtn" onclick="handleList()">Create Listing</button>
+      </div>
+    </div>
+
+    <!-- Step 4: Done -->
+    <div class="step-card" id="card4">
+      <div class="done-icon">&#10003;</div>
+      <div class="done-title">Listed Successfully!</div>
+
+      <div class="listing-preview">
+        <div class="preview-name" id="doneName">-</div>
+        <div class="preview-price" id="donePrice">0 ETH</div>
+      </div>
+
+      <div class="btn-row">
+        <a href="/marketplace/" class="btn btn-secondary" style="text-decoration: none; text-align: center;">Browse Marketplace</a>
+        <a href="#" class="btn btn-primary" id="viewListingBtn" style="text-decoration: none; text-align: center;">View Listing</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API_BASE = 'https://basescriptions-api.wrapit.workers.dev';
+    const BASE_CHAIN_ID = '0x2105';
+
+    let address = null;
+    let ownedNames = [];
+    let selectedName = null;
+    let transferTx = null;
+    let listingId = null;
+
+    const connectBtn = document.getElementById('connectBtn');
+    const priceInput = document.getElementById('priceInput');
+    const continueBtn = document.getElementById('continueBtn');
+
+    // Init
+    checkWallet();
+
+    async function checkWallet() {
+      if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          if (accounts && accounts[0]) {
+            address = accounts[0].toLowerCase();
+            updateWalletUI();
+            scanWallet();
+          } else {
+            document.getElementById('namesContent').innerHTML = `
+              <div class="empty">
+                <p>Connect your wallet to see your names</p>
+                <button class="btn btn-primary" style="margin-top: 16px;" onclick="connectWallet()">Connect Wallet</button>
+              </div>
+            `;
+          }
+        } catch (e) {}
+      }
+    }
+
+    async function connectWallet() {
+      if (!window.ethereum) {
+        alert('Please install MetaMask or another wallet');
+        return;
+      }
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if (accounts && accounts[0]) {
+          address = accounts[0].toLowerCase();
+          updateWalletUI();
+          scanWallet();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function updateWalletUI() {
+      if (address) {
+        connectBtn.textContent = address.slice(0, 6) + '...' + address.slice(-4);
+        connectBtn.classList.add('wallet-addr');
+      }
+    }
+
+    connectBtn.addEventListener('click', () => {
+      if (!address) connectWallet();
+    });
+
+    async function scanWallet() {
+      document.getElementById('namesContent').innerHTML = '<div class="loading">Scanning wallet for names...</div>';
+
+      try {
+        // Use our own API
+        const res = await fetch(`${API_BASE}/owned/${address}?limit=500`);
+        const data = await res.json();
+
+        if (data.ethscriptions && data.ethscriptions.length > 0) {
+          // Filter to text names only
+          ownedNames = data.ethscriptions
+            .filter(e => e.content_uri && e.content_uri.startsWith('data:,'))
+            .map(e => ({
+              name: e.content_uri.replace('data:,', ''),
+              ethscriptionId: e.id,
+              txHash: e.creation_tx
+            }));
+
+          if (ownedNames.length > 0) {
+            renderNames();
+          } else {
+            document.getElementById('namesContent').innerHTML = `
+              <div class="empty">
+                <p>No names found in your wallet</p>
+                <a href="/register/">Register a name first</a>
+              </div>
+            `;
+          }
+        } else {
+          document.getElementById('namesContent').innerHTML = `
+            <div class="empty">
+              <p>No names found in your wallet</p>
+              <a href="/register/">Register a name first</a>
+            </div>
+          `;
+        }
+      } catch (e) {
+        console.error(e);
+        document.getElementById('namesContent').innerHTML = '<div class="loading">Error scanning wallet</div>';
+      }
+    }
+
+    function renderNames() {
+      document.getElementById('namesContent').innerHTML = `
+        <div class="names-grid">
+          ${ownedNames.map(n => `
+            <button class="name-btn" data-id="${n.ethscriptionId}" onclick="selectName('${n.ethscriptionId}')">
+              ${escapeHtml(n.name)}
+            </button>
+          `).join('')}
+        </div>
+      `;
+      document.getElementById('priceSection').style.display = 'block';
+    }
+
+    function selectName(id) {
+      selectedName = ownedNames.find(n => n.ethscriptionId === id);
+
+      // Update UI
+      document.querySelectorAll('.name-btn').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.id === id);
+      });
+
+      updateContinueBtn();
+    }
+
+    priceInput.addEventListener('input', updateContinueBtn);
+
+    function updateContinueBtn() {
+      const price = parseFloat(priceInput.value);
+      continueBtn.disabled = !selectedName || !price || price <= 0;
+    }
+
+    continueBtn.addEventListener('click', () => {
+      if (selectedName && parseFloat(priceInput.value) > 0) {
+        goToStep(2);
+      }
+    });
+
+    function goToStep(step) {
+      // Update progress
+      for (let i = 1; i <= 3; i++) {
+        const el = document.getElementById('step' + i);
+        el.classList.remove('active', 'done');
+        if (i < step) el.classList.add('done');
+        if (i === step) el.classList.add('active');
+      }
+
+      // Show card
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById('card' + i).classList.toggle('active', i === step);
+      }
+
+      // Update previews
+      if (step === 2 && selectedName) {
+        document.getElementById('previewName').textContent = selectedName.name;
+        document.getElementById('previewPrice').textContent = priceInput.value;
+      }
+
+      if (step === 3 && selectedName) {
+        const price = parseFloat(priceInput.value);
+        const fee = price * 0.025;
+        const receive = price - fee;
+
+        document.getElementById('finalName').textContent = selectedName.name;
+        document.getElementById('finalPrice').textContent = price.toFixed(4);
+        document.getElementById('feeAmount').textContent = fee.toFixed(4);
+        document.getElementById('receiveAmount').textContent = receive.toFixed(4);
+
+        if (transferTx) {
+          document.getElementById('transferSuccess').style.display = 'block';
+        }
+      }
+    }
+
+    function showMessage(msg, type = 'error') {
+      document.getElementById('messageArea').innerHTML = `<div class="message ${type}">${msg}</div>`;
+    }
+
+    async function switchToBase() {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: BASE_CHAIN_ID }]
+        });
+        return true;
+      } catch (e) {
+        if (e.code === 4902) {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: BASE_CHAIN_ID,
+              chainName: 'Base',
+              nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+              rpcUrls: ['https://mainnet.base.org'],
+              blockExplorerUrls: ['https://basescan.org']
+            }]
+          });
+          return true;
+        }
+        throw e;
+      }
+    }
+
+    async function handleTransfer() {
+      const btn = document.getElementById('transferBtn');
+      btn.disabled = true;
+      btn.textContent = 'Transferring...';
+
+      try {
+        await switchToBase();
+
+        // For MVP: Transfer ethscription to ourselves (simulating escrow)
+        // In production: Transfer to escrow contract
+        const ethscriptionId = selectedName.ethscriptionId;
+
+        // Transfer ethscription by sending tx with hash as data
+        const tx = await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: address,
+            to: address, // Self-transfer for now (later: escrow contract)
+            data: ethscriptionId,
+            value: '0x0'
+          }]
+        });
+
+        transferTx = tx;
+        goToStep(3);
+      } catch (e) {
+        console.error(e);
+        showMessage(e.message || 'Transfer failed');
+        btn.disabled = false;
+        btn.textContent = 'Transfer Name';
+      }
+    }
+
+    async function handleList() {
+      const btn = document.getElementById('listBtn');
+      btn.disabled = true;
+      btn.textContent = 'Creating listing...';
+
+      try {
+        const priceWei = BigInt(Math.floor(parseFloat(priceInput.value) * 1e18)).toString();
+
+        const res = await fetch(`${API_BASE}/marketplace/listings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: selectedName.name,
+            sellerAddress: address,
+            priceWei,
+            ethscriptionId: selectedName.ethscriptionId,
+            depositTx: transferTx
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to create listing');
+        }
+
+        listingId = data.listing.id;
+
+        // Show done
+        document.getElementById('doneName').textContent = selectedName.name;
+        document.getElementById('donePrice').textContent = priceInput.value + ' ETH';
+        document.getElementById('viewListingBtn').href = '/marketplace/' + listingId;
+
+        // Update progress
+        for (let i = 1; i <= 3; i++) {
+          document.getElementById('step' + i).classList.add('done');
+        }
+
+        // Show card 4
+        for (let i = 1; i <= 4; i++) {
+          document.getElementById('card' + i).classList.toggle('active', i === 4);
+        }
+      } catch (e) {
+        console.error(e);
+        showMessage(e.message || 'Failed to create listing');
+        btn.disabled = false;
+        btn.textContent = 'Create Listing';
+      }
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

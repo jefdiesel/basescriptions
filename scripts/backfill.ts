@@ -3,12 +3,27 @@ import { ethers, JsonRpcProvider } from 'ethers'
 import { createHash } from 'crypto'
 import 'dotenv/config'
 
-const BASE_RPC = process.env.BASE_RPC_URL || 'https://mainnet.base.org'
+// Multiple RPC endpoints with fallback
+const RPC_URLS = [
+  process.env.BASE_RPC_URL || 'https://mainnet.base.org',
+  'https://base-mainnet.g.alchemy.com/v2/YDk7TKMgutp260sJNRhkH',
+  'https://base.llamarpc.com',
+  'https://base-rpc.publicnode.com',
+]
+
 const SUPABASE_URL = process.env.SUPABASE_URL!
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY!
 
-const provider = new JsonRpcProvider(BASE_RPC)
+let currentRpcIndex = 0
+let provider = new JsonRpcProvider(RPC_URLS[currentRpcIndex])
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+function switchProvider(): JsonRpcProvider {
+  currentRpcIndex = (currentRpcIndex + 1) % RPC_URLS.length
+  console.log(`Switching to RPC: ${RPC_URLS[currentRpcIndex]}`)
+  provider = new JsonRpcProvider(RPC_URLS[currentRpcIndex])
+  return provider
+}
 
 const BATCH_SIZE = parseInt(process.env.BATCH_SIZE || '10')
 const CONCURRENCY = parseInt(process.env.CONCURRENCY || '1')
@@ -45,26 +60,35 @@ function sha256(content: string): string {
   return '0x' + createHash('sha256').update(content).digest('hex')
 }
 
-async function getBlockWithRetry(blockNum: number, retries = 5): Promise<any> {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const block = await provider.getBlock(blockNum, true)
-      if (block && block.prefetchedTransactions) {
-        return block
+async function getBlockWithRetry(blockNum: number, retries = 3): Promise<any> {
+  // Try each RPC provider
+  for (let providerAttempt = 0; providerAttempt < RPC_URLS.length; providerAttempt++) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const block = await provider.getBlock(blockNum, true)
+        if (block && block.prefetchedTransactions) {
+          return block
+        }
+        // Block exists but no transactions - that's valid
+        if (block && block.transactions?.length === 0) {
+          return block
+        }
+        console.log(`Block ${blockNum}: empty response, retry ${i + 1}/${retries}`)
+      } catch (e: any) {
+        const isRateLimit = e.message?.includes('429') || e.code === 429 || e.error?.code === 429
+        if (isRateLimit) {
+          console.log(`Block ${blockNum}: rate limited on ${RPC_URLS[currentRpcIndex]}, switching provider`)
+          switchProvider()
+          break // Try next provider immediately
+        }
+        console.log(`Block ${blockNum}: error ${e.message?.slice(0, 50)}, retry ${i + 1}/${retries}`)
       }
-      // Block exists but no transactions - that's valid
-      if (block && block.transactions?.length === 0) {
-        return block
-      }
-      console.log(`Block ${blockNum}: empty response, retry ${i + 1}/${retries}`)
-    } catch (e: any) {
-      if (e.message?.includes('429')) {
-        // Rate limited - wait longer
-        await new Promise(r => setTimeout(r, 2000 * (i + 1)))
-      }
-      console.log(`Block ${blockNum}: error, retry ${i + 1}/${retries}`)
+      await new Promise(r => setTimeout(r, 500 * (i + 1)))
     }
-    await new Promise(r => setTimeout(r, 1000 * (i + 1)))
+    // If we exhausted retries on this provider, try next one
+    if (providerAttempt < RPC_URLS.length - 1) {
+      switchProvider()
+    }
   }
   return null
 }
@@ -157,12 +181,25 @@ async function processBlock(blockNum: number): Promise<{ created: number; transf
   return { created, transferred }
 }
 
+async function getBlockNumberWithFallback(): Promise<number> {
+  for (let i = 0; i < RPC_URLS.length; i++) {
+    try {
+      return await provider.getBlockNumber()
+    } catch (e: any) {
+      console.log(`Failed to get block number from ${RPC_URLS[currentRpcIndex]}: ${e.message?.slice(0, 50)}`)
+      switchProvider()
+    }
+  }
+  throw new Error('All RPC providers failed')
+}
+
 async function main() {
   console.log('Base Ethscriptions Backfill')
   console.log('===========================')
-  console.log(`RPC: ${BASE_RPC}\n`)
+  console.log(`Primary RPC: ${RPC_URLS[0]}`)
+  console.log(`Fallback RPCs: ${RPC_URLS.slice(1).join(', ')}\n`)
 
-  const currentBlock = await provider.getBlockNumber()
+  const currentBlock = await getBlockNumberWithFallback()
   const startBlock = await getStartBlock()
 
   console.log(`Current block: ${currentBlock}`)

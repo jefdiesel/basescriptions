@@ -111,10 +111,41 @@
       word-break: break-all;
       color: var(--accent);
     }
+    .item-image {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: contain;
+      background: #1a1a1a;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .item-image.pixel-art {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+    .item-iframe {
+      width: 100%;
+      aspect-ratio: 1;
+      border: none;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background: #e8e8e8;
+      pointer-events: none;
+    }
     .item-meta {
       font-size: 12px;
       color: var(--text2);
     }
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+    .nav-links a {
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .nav-links a:hover { color: var(--text); }
 
     .pagination {
       display: flex;
@@ -202,6 +233,7 @@
       .logo { font-size: 20px; }
       .logo-icon { width: 32px; height: 32px; }
       .hamburger { display: flex; }
+      .nav-links { display: none; }
     }
 
     .load-more {
@@ -230,6 +262,11 @@
         <div class="logo-icon">B</div>
         <span>Basescriptions</span>
       </a>
+      <nav class="nav-links">
+        <a href="/register/">Register a Name</a>
+        <a href="/inscribe/">Inscribe</a>
+        <a href="/upload/">Upload Site</a>
+      </nav>
       <button class="hamburger" id="hamburger">
         <span></span>
         <span></span>
@@ -241,6 +278,7 @@
       <a href="/">Home</a>
       <a href="/register/">Register a Name</a>
       <a href="/inscribe/">Inscribe</a>
+      <a href="/upload/">Upload Site</a>
     </div>
 
     <div class="wallet-header">
@@ -369,14 +407,36 @@
           }
 
           const cards = data.ethscriptions.map(e => {
-            const content = e.content_uri?.replace(/^data:[^,]*,/, '') || '';
-            const truncated = content.length > 30 ? content.slice(0, 30) + '...' : content;
-            return `
-              <div class="item-card" onclick="window.location='/item/${e.id}'">
-                <div class="item-content">${escapeHtml(truncated)}</div>
-                <div class="item-meta">Block ${e.creation_block?.toLocaleString()}</div>
-              </div>
-            `;
+            const contentUri = e.content_uri || '';
+            const isImage = contentUri.startsWith('data:image/');
+            const isHtml = contentUri.startsWith('data:text/html');
+            const isPixelArt = contentUri.includes('pixelart=1');
+
+            if (isImage) {
+              const pixelClass = isPixelArt ? 'pixel-art' : '';
+              return `
+                <div class="item-card" onclick="window.location='/item/${e.id}'">
+                  <img src="${contentUri}" class="item-image ${pixelClass}" alt="Inscription" />
+                  <div class="item-meta">Block ${e.creation_block?.toLocaleString()}</div>
+                </div>
+              `;
+            } else if (isHtml) {
+              return `
+                <div class="item-card" onclick="window.location='/item/${e.id}'">
+                  <iframe src="${contentUri}" class="item-iframe"></iframe>
+                  <div class="item-meta">Block ${e.creation_block?.toLocaleString()}</div>
+                </div>
+              `;
+            } else {
+              const content = contentUri.replace(/^data:[^,]*,/, '') || '';
+              const truncated = content.length > 30 ? content.slice(0, 30) + '...' : content;
+              return `
+                <div class="item-card" onclick="window.location='/item/${e.id}'">
+                  <div class="item-content">${escapeHtml(truncated)}</div>
+                  <div class="item-meta">Block ${e.creation_block?.toLocaleString()}</div>
+                </div>
+              `;
+            }
           }).join('');
 
           document.getElementById('grid').insertAdjacentHTML('beforeend', cards);

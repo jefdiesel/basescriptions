@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketplace | Basescriptions</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --bg2: #141414;
+      --border: #2a2a2a;
+      --text: #e0e0e0;
+      --text2: #888;
+      --accent: #0052FF;
+      --success: #30E000;
+      --danger: #ff4444;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    header .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    nav { display: flex; gap: 24px; align-items: center; }
+    nav a { color: var(--text2); text-decoration: none; font-size: 14px; }
+    nav a:hover, nav a.active { color: var(--accent); }
+    .connect-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .connect-btn:hover { opacity: 0.9; }
+    .wallet-addr {
+      font-family: monospace;
+      color: var(--text2);
+      font-size: 14px;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--accent);
+    }
+    .stat-label {
+      color: var(--text2);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-size: 16px;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .sort-select {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-size: 14px;
+    }
+    .sell-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .sell-btn:hover { opacity: 0.9; }
+
+    /* Listings Grid */
+    .listings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .listing-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      text-decoration: none;
+      color: var(--text);
+      transition: border-color 0.2s;
+      cursor: pointer;
+    }
+    .listing-card:hover {
+      border-color: var(--accent);
+    }
+    .listing-name {
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--accent);
+      font-family: monospace;
+      margin-bottom: 8px;
+    }
+    .listing-price {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .listing-seller {
+      color: var(--text2);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+    .listing-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text2);
+    }
+    .listing-offers {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #f0b000;
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+    .pagination button {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 20px;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .pagination button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .pagination button:hover:not(:disabled) {
+      border-color: var(--accent);
+    }
+    .pagination span {
+      padding: 10px 16px;
+      color: var(--text2);
+    }
+
+    /* Activity */
+    .activity-section {
+      border-top: 1px solid var(--border);
+      padding-top: 32px;
+    }
+    .activity-section h2 {
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .activity-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+    }
+    .activity-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .activity-type {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .activity-type.listing { background: #1e3a5f; color: #60a5fa; }
+    .activity-type.sale { background: #1e4620; color: #4ade80; }
+    .activity-type.offer { background: #4a3f1e; color: #fbbf24; }
+    .activity-name {
+      font-family: monospace;
+      color: var(--accent);
+    }
+    .activity-addr {
+      color: var(--text2);
+      font-size: 13px;
+    }
+    .activity-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .activity-price {
+      font-weight: bold;
+    }
+    .activity-time {
+      color: var(--text2);
+      font-size: 13px;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text2);
+    }
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text2);
+    }
+    .empty a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      nav { display: none; }
+      header .container { flex-wrap: wrap; gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <a href="/" class="logo">
+        <div class="logo-icon">B</div>
+        <span>Basescriptions</span>
+      </a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/register/">Register</a>
+        <a href="/inscribe/">Inscribe</a>
+        <a href="/marketplace/" class="active">Marketplace</a>
+      </nav>
+      <button class="connect-btn" id="connectBtn">Connect Wallet</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Stats -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-value" id="statListings">-</div>
+        <div class="stat-label">Active Listings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statSales">-</div>
+        <div class="stat-label">Total Sales</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statVolume">-</div>
+        <div class="stat-label">Total Volume</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statAvg">-</div>
+        <div class="stat-label">Avg Sale Price</div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search names...">
+      <select class="sort-select" id="sortSelect">
+        <option value="created_at-desc">Newest First</option>
+        <option value="created_at-asc">Oldest First</option>
+        <option value="price_eth-asc">Price: Low to High</option>
+        <option value="price_eth-desc">Price: High to Low</option>
+        <option value="name-asc">Name: A-Z</option>
+        <option value="name-desc">Name: Z-A</option>
+      </select>
+      <a href="/marketplace/sell/" class="sell-btn" id="sellBtn" style="display: none;">Sell Name</a>
+    </div>
+
+    <!-- Listings -->
+    <div class="listings-grid" id="listingsGrid">
+      <div class="loading">Loading listings...</div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" id="pagination" style="display: none;">
+      <button id="prevBtn">Prev</button>
+      <span id="pageInfo">Page 1 of 1</span>
+      <button id="nextBtn">Next</button>
+    </div>
+
+    <!-- Activity -->
+    <div class="activity-section">
+      <h2>Recent Activity</h2>
+      <div class="activity-list" id="activityList">
+        <div class="loading">Loading activity...</div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API_BASE = 'https://basescriptions-api.wrapit.workers.dev';
+    const BASE_CHAIN_ID = '0x2105';
+
+    let address = null;
+    let currentPage = 1;
+    let totalPages = 1;
+    let searchTimeout = null;
+
+    // Elements
+    const connectBtn = document.getElementById('connectBtn');
+    const sellBtn = document.getElementById('sellBtn');
+    const searchInput = document.getElementById('searchInput');
+    const sortSelect = document.getElementById('sortSelect');
+    const listingsGrid = document.getElementById('listingsGrid');
+    const pagination = document.getElementById('pagination');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const pageInfo = document.getElementById('pageInfo');
+
+    // Init
+    checkWallet();
+    fetchStats();
+    fetchListings();
+    fetchActivity();
+
+    // Wallet
+    async function checkWallet() {
+      if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          if (accounts && accounts[0]) {
+            address = accounts[0];
+            updateWalletUI();
+          }
+        } catch (e) {}
+      }
+    }
+
+    async function connectWallet() {
+      if (!window.ethereum) {
+        alert('Please install MetaMask or another wallet');
+        return;
+      }
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if (accounts && accounts[0]) {
+          address = accounts[0];
+          updateWalletUI();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function updateWalletUI() {
+      if (address) {
+        connectBtn.textContent = address.slice(0, 6) + '...' + address.slice(-4);
+        connectBtn.classList.add('wallet-addr');
+        sellBtn.style.display = 'inline-block';
+      }
+    }
+
+    connectBtn.addEventListener('click', () => {
+      if (!address) connectWallet();
+    });
+
+    // Stats
+    async function fetchStats() {
+      try {
+        const res = await fetch(`${API_BASE}/marketplace/stats`);
+        const data = await res.json();
+        if (data.stats) {
+          document.getElementById('statListings').textContent = data.stats.activeListings;
+          document.getElementById('statSales').textContent = data.stats.totalSales;
+          document.getElementById('statVolume').textContent = data.stats.totalVolumeEth.toFixed(2) + ' ETH';
+          document.getElementById('statAvg').textContent = data.stats.avgSalePriceEth.toFixed(4) + ' ETH';
+        }
+      } catch (e) {
+        console.error('Stats error:', e);
+      }
+    }
+
+    // Listings
+    async function fetchListings() {
+      const [sort, order] = sortSelect.value.split('-');
+      const search = searchInput.value.trim();
+
+      const params = new URLSearchParams({
+        limit: '24',
+        offset: ((currentPage - 1) * 24).toString(),
+        sort,
+        order
+      });
+      if (search) params.set('search', search);
+
+      try {
+        const res = await fetch(`${API_BASE}/marketplace/listings?${params}`);
+        const data = await res.json();
+
+        if (data.listings && data.listings.length > 0) {
+          totalPages = data.pagination.pages;
+          renderListings(data.listings);
+          updatePagination();
+        } else {
+          listingsGrid.innerHTML = `
+            <div class="empty">
+              <p>No listings found</p>
+              ${address ? '<a href="/marketplace/sell/">Be the first to list a name!</a>' : ''}
+            </div>
+          `;
+          pagination.style.display = 'none';
+        }
+      } catch (e) {
+        console.error('Listings error:', e);
+        listingsGrid.innerHTML = '<div class="loading">Error loading listings</div>';
+      }
+    }
+
+    function renderListings(listings) {
+      listingsGrid.innerHTML = listings.map(l => `
+        <div class="listing-card" onclick="window.location='/marketplace/${l.id}'">
+          <div class="listing-name">${escapeHtml(l.name)}</div>
+          <div class="listing-price">${parseFloat(l.price_eth).toFixed(4)} ETH</div>
+          <div class="listing-seller">Seller: ${l.seller_address.slice(0, 6)}...${l.seller_address.slice(-4)}</div>
+          <div class="listing-meta">
+            <span>BASE</span>
+            <span>${new Date(l.created_at).toLocaleDateString()}</span>
+          </div>
+          ${l.offer_count > 0 ? `<div class="listing-offers">${l.offer_count} offer${l.offer_count > 1 ? 's' : ''}${l.highest_offer ? ` (highest: ${parseFloat(l.highest_offer).toFixed(4)} ETH)` : ''}</div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function updatePagination() {
+      if (totalPages <= 1) {
+        pagination.style.display = 'none';
+        return;
+      }
+      pagination.style.display = 'flex';
+      pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+      prevBtn.disabled = currentPage === 1;
+      nextBtn.disabled = currentPage === totalPages;
+    }
+
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        fetchListings();
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        fetchListings();
+      }
+    });
+
+    // Search
+    searchInput.addEventListener('input', () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        currentPage = 1;
+        fetchListings();
+      }, 300);
+    });
+
+    // Sort
+    sortSelect.addEventListener('change', () => {
+      currentPage = 1;
+      fetchListings();
+    });
+
+    // Activity
+    async function fetchActivity() {
+      const activityList = document.getElementById('activityList');
+      try {
+        const res = await fetch(`${API_BASE}/marketplace/activity?limit=10`);
+        const data = await res.json();
+
+        if (data.activity && data.activity.length > 0) {
+          activityList.innerHTML = data.activity.map(a => `
+            <div class="activity-item">
+              <div class="activity-left">
+                <span class="activity-type ${a.type}">${a.type}</span>
+                <span class="activity-name">${escapeHtml(a.name)}</span>
+                <span class="activity-addr">
+                  ${a.type === 'sale' ? `${a.fromAddress.slice(0, 6)}...${a.fromAddress.slice(-4)} → ${a.toAddress.slice(0, 6)}...${a.toAddress.slice(-4)}` :
+                    `by ${a.fromAddress.slice(0, 6)}...${a.fromAddress.slice(-4)}`}
+                </span>
+              </div>
+              <div class="activity-right">
+                <span class="activity-price">${a.priceEth.toFixed(4)} ETH</span>
+                <span class="activity-time">${timeAgo(a.createdAt)}</span>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          activityList.innerHTML = '<div class="empty">No activity yet</div>';
+        }
+      } catch (e) {
+        console.error('Activity error:', e);
+        activityList.innerHTML = '<div class="loading">Error loading activity</div>';
+      }
+    }
+
+    // Helpers
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function timeAgo(dateStr) {
+      const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+      if (seconds < 60) return 'just now';
+      if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+      if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+      return Math.floor(seconds / 86400) + 'd ago';
+    }
+  </script>
+</body>
+</html>

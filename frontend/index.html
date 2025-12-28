@@ -54,6 +54,8 @@
       gap: 12px;
       font-size: 24px;
       font-weight: 700;
+      text-decoration: none;
+      color: var(--text-primary);
     }
 
     .logo-icon {
@@ -354,6 +356,29 @@
       margin: 4px 0;
     }
 
+    .inscription-image {
+      width: 100%;
+      max-height: 180px;
+      object-fit: contain;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .inscription-image.pixel-art {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    .inscription-iframe {
+      width: 100%;
+      height: 180px;
+      border: none;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background: #e8e8e8;
+      pointer-events: none;
+    }
+
     /* Footer */
     footer {
       padding: 40px 0;
@@ -601,13 +626,14 @@
   </div>
   <header>
     <div class="container">
-      <div class="logo">
+      <a href="/" class="logo">
         <div class="logo-icon">B</div>
         <span>Basescriptions</span>
-      </div>
+      </a>
       <nav>
         <a href="/register/">Register a Name</a>
         <a href="/inscribe/">Inscribe</a>
+        <a href="/upload/">Upload Site</a>
         <a href="#recent">Recent</a>
       </nav>
       <button class="connect-btn" id="connectBtn">Connect Wallet</button>
@@ -623,6 +649,7 @@
     <a href="/">Home</a>
     <a href="/register/">Register a Name</a>
     <a href="/inscribe/">Inscribe</a>
+    <a href="/upload/">Upload Site</a>
     <a href="#recent" onclick="closeMobileNav()">Recent</a>
     <button class="connect-btn" id="mobileConnectBtn">Connect Wallet</button>
   </div>
@@ -822,10 +849,12 @@
           resultStatus.classList.remove('taken');
           resultStatus.classList.add('available');
           resultDetails.innerHTML = '';
+          // Store name globally for the button
+          window.pendingName = name;
           registerBtn.style.display = 'inline-block';
           registerBtn.disabled = false;
           registerBtn.textContent = 'Register Now';
-          registerBtn.onclick = () => registerName(name);
+          registerBtn.setAttribute('onclick', 'registerName(window.pendingName)');
         } else {
           result.classList.remove('available');
           result.classList.add('taken');
@@ -946,10 +975,19 @@
     }
 
     function registerAnother() {
+      // Restore the result box structure
+      result.innerHTML = `
+        <div class="result-header">
+          <span class="result-status" id="resultStatus">Available</span>
+          <span class="result-name" id="resultName"></span>
+        </div>
+        <div class="result-details" id="resultDetails"></div>
+        <button class="register-btn" id="registerBtn" style="display: none;">Register Now</button>
+      `;
+      result.style.borderColor = '';
+      result.classList.remove('show', 'available', 'taken');
       searchInput.value = '';
       searchInput.focus();
-      result.classList.remove('show', 'available', 'taken');
-      registerBtn.style.display = 'none';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -1036,18 +1074,45 @@
         }
 
         const cards = data.ethscriptions.map(e => {
-          const content = e.content_uri || '';
-          const display = content.replace(/^data:[^,]*,/, '');
-          const truncated = display.length > 50 ? display.slice(0, 50) + '...' : display;
-          return `
-            <div class="inscription-card" onclick="window.location='/item/${e.id}'">
-              <div class="inscription-content">${escapeHtml(truncated)}</div>
-              <div class="inscription-meta">
-                <span>Owner: ${e.current_owner.slice(0, 8)}...${e.current_owner.slice(-6)}</span>
-                <span>Block: ${e.creation_block.toLocaleString()}</span>
+          const contentUri = e.content_uri || '';
+          const isImage = contentUri.startsWith('data:image/');
+          const isHtml = contentUri.startsWith('data:text/html');
+          const isPixelArt = contentUri.includes('pixelart=1');
+
+          if (isImage) {
+            const pixelClass = isPixelArt ? 'pixel-art' : '';
+            return `
+              <div class="inscription-card" onclick="window.location='/item/${e.id}'">
+                <img src="${contentUri}" class="inscription-image ${pixelClass}" alt="Inscription" />
+                <div class="inscription-meta">
+                  <span>Owner: ${e.current_owner.slice(0, 8)}...${e.current_owner.slice(-6)}</span>
+                  <span>Block: ${e.creation_block.toLocaleString()}</span>
+                </div>
               </div>
-            </div>
-          `;
+            `;
+          } else if (isHtml) {
+            return `
+              <div class="inscription-card" onclick="window.location='/item/${e.id}'">
+                <iframe src="${contentUri}" class="inscription-iframe"></iframe>
+                <div class="inscription-meta">
+                  <span>Owner: ${e.current_owner.slice(0, 8)}...${e.current_owner.slice(-6)}</span>
+                  <span>Block: ${e.creation_block.toLocaleString()}</span>
+                </div>
+              </div>
+            `;
+          } else {
+            const display = contentUri.replace(/^data:[^,]*,/, '');
+            const truncated = display.length > 50 ? display.slice(0, 50) + '...' : display;
+            return `
+              <div class="inscription-card" onclick="window.location='/item/${e.id}'">
+                <div class="inscription-content">${escapeHtml(truncated)}</div>
+                <div class="inscription-meta">
+                  <span>Owner: ${e.current_owner.slice(0, 8)}...${e.current_owner.slice(-6)}</span>
+                  <span>Block: ${e.creation_block.toLocaleString()}</span>
+                </div>
+              </div>
+            `;
+          }
         }).join('');
 
         recentGrid.insertAdjacentHTML('beforeend', cards);

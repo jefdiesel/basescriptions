@@ -80,6 +80,10 @@
       max-width: 100%;
       max-height: 400px;
     }
+    .preview-box img.pixel-art {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
     .preview-text {
       font-family: 'SF Mono', Monaco, 'Courier New', monospace;
       font-size: 24px;
@@ -348,6 +352,7 @@
       <nav>
         <a href="/register/">Register a Name</a>
         <a href="/inscribe/">Inscribe</a>
+        <a href="/upload/">Upload Site</a>
       </nav>
       <button class="hamburger" id="hamburger">
         <span></span>
@@ -360,6 +365,7 @@
       <a href="/">Home</a>
       <a href="/register/">Register a Name</a>
       <a href="/inscribe/">Inscribe</a>
+      <a href="/upload/">Upload Site</a>
     </div>
 
     <div id="content">
@@ -473,8 +479,10 @@
       // Preview
       let preview = '';
       if (content.startsWith('data:image/')) {
-        preview = `<img src="${content}" alt="Inscription">`;
-      } else if (content.startsWith('data:text/html') || content.includes('base64')) {
+        const isPixelArt = content.includes('pixelart=1');
+        const pixelClass = isPixelArt ? 'pixel-art' : '';
+        preview = `<img src="${content}" alt="Inscription" class="${pixelClass}">`;
+      } else if (content.startsWith('data:text/html')) {
         preview = `<iframe src="${content}"></iframe>`;
       } else {
         preview = `<div class="preview-text">${escapeHtml(nameText)}</div>`;

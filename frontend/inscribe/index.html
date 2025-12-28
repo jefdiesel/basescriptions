@@ -384,6 +384,7 @@
         <a href="/">Home</a>
         <a href="/register/">Register a Name</a>
         <a href="/inscribe/">Inscribe</a>
+        <a href="/upload/">Upload Site</a>
         <button class="connect-btn" id="connectBtn">Connect Wallet</button>
       </div>
       <button class="hamburger" id="hamburger">
@@ -397,6 +398,7 @@
       <a href="/">Home</a>
       <a href="/register/">Register a Name</a>
       <a href="/inscribe/">Inscribe</a>
+      <a href="/upload/">Upload Site</a>
       <button class="connect-btn" id="mobileConnectBtn">Connect Wallet</button>
     </div>
 
@@ -434,7 +436,14 @@
           <input type="file" id="imageInput" accept="image/*" />
         </div>
         <div class="file-preview" id="imagePreview"></div>
-        <div class="size-info" style="margin-top: 20px;">
+        <div class="pixel-art-option" style="margin-top: 16px; display: flex; align-items: center; gap: 10px;">
+          <input type="checkbox" id="pixelArtCheck" style="width: 18px; height: 18px; cursor: pointer;" />
+          <label for="pixelArtCheck" style="cursor: pointer; font-size: 14px; color: var(--text);">
+            Pixel Art Mode
+            <span style="color: var(--text2); font-size: 12px; display: block;">Uses nearest-neighbor scaling (crisp pixels, no blur)</span>
+          </label>
+        </div>
+        <div class="size-info" style="margin-top: 16px;">
           <span class="label">Size (base64)</span>
           <span class="value" id="imageSize">0 B</span>
         </div>
@@ -588,16 +597,37 @@ data:image/png;base64,iVBORw0KGgo..."></textarea>
       const reader = new FileReader();
       reader.onload = (e) => {
         fileData = e.target.result;
-        document.getElementById('imagePreview').innerHTML = `<img src="${fileData}" />`;
-        document.getElementById('imageSize').textContent = formatBytes(fileData.length);
-        if (fileData.length > 100000) {
-          document.getElementById('imageSize').classList.add('warning');
-        } else {
-          document.getElementById('imageSize').classList.remove('warning');
-        }
+        const isPixelArt = document.getElementById('pixelArtCheck').checked;
+        const imgStyle = isPixelArt ? 'image-rendering: pixelated;' : '';
+        document.getElementById('imagePreview').innerHTML = `<img src="${fileData}" style="${imgStyle}" />`;
+        updateImageSize();
       };
       reader.readAsDataURL(file);
     }
+
+    function updateImageSize() {
+      if (!fileData) return;
+      const isPixelArt = document.getElementById('pixelArtCheck').checked;
+      // If pixel art, the data URI will be slightly longer due to ;pixelart=1
+      const extraLen = isPixelArt ? 10 : 0;
+      const totalLen = fileData.length + extraLen;
+      document.getElementById('imageSize').textContent = formatBytes(totalLen);
+      if (totalLen > 100000) {
+        document.getElementById('imageSize').classList.add('warning');
+      } else {
+        document.getElementById('imageSize').classList.remove('warning');
+      }
+    }
+
+    // Update preview when pixel art checkbox changes
+    document.getElementById('pixelArtCheck').addEventListener('change', () => {
+      if (fileData) {
+        const isPixelArt = document.getElementById('pixelArtCheck').checked;
+        const imgStyle = isPixelArt ? 'image-rendering: pixelated;' : '';
+        document.getElementById('imagePreview').innerHTML = `<img src="${fileData}" style="${imgStyle}" />`;
+        updateImageSize();
+      }
+    });
 
     // Inscribe
     async function inscribe() {
@@ -617,7 +647,13 @@ data:image/png;base64,iVBORw0KGgo..."></textarea>
 
         case 'image':
           if (!fileData) { alert('Upload an image first'); return; }
-          content = fileData;
+          const isPixelArt = document.getElementById('pixelArtCheck').checked;
+          if (isPixelArt) {
+            // Insert pixelart=1 before ;base64
+            content = fileData.replace(/;base64,/, ';pixelart=1;base64,');
+          } else {
+            content = fileData;
+          }
           break;
 
         case 'html':

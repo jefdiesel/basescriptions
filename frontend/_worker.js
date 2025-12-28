@@ -7,7 +7,7 @@ export default {
     const path = url.pathname;
 
     // Try to serve static assets first
-    const staticPaths = ['/', '/index.html', '/register/', '/upload/', '/inscribe/', '/item/', '/address/'];
+    const staticPaths = ['/', '/index.html', '/register/', '/upload/', '/inscribe/', '/item/', '/address/', '/marketplace/', '/marketplace/sell/'];
     if (staticPaths.includes(path) || path.includes('.')) {
       const response = await env.ASSETS.fetch(request);
       if (response.status !== 404) {
@@ -23,6 +23,15 @@ export default {
     // Handle /address/0x... routes - serve address page
     if (path.startsWith('/address/') && path !== '/address/') {
       return serveAsset(env, request, '/address/index.html');
+    }
+
+    // Handle /marketplace/UUID routes - serve marketplace item page
+    if (path.startsWith('/marketplace/') && path !== '/marketplace/' && path !== '/marketplace/sell/') {
+      const segment = path.replace('/marketplace/', '').replace(/\/$/, '');
+      // Check if it's a UUID (listing ID)
+      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(segment)) {
+        return serveAsset(env, request, '/marketplace/item/index.html');
+      }
     }
 
     const segment = path.replace(/^\//, '').replace(/\/$/, '');
