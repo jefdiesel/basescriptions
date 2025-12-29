@@ -1098,7 +1098,8 @@
         // Filter out spam/junk content types
         const filtered = data.ethscriptions.filter(e => {
           const ct = (e.content_type || '').toLowerCase();
-          if (ct === 'application/text' || ct.startsWith('data:application/text')) {
+          // Hide application/json (chunked multipart spam) and application/text
+          if (ct === 'application/json' || ct === 'application/text') {
             return false;
           }
           return true;
