@@ -499,6 +499,21 @@ data:image/png;base64,iVBORw0KGgo..."></textarea>
       document.getElementById('mobileConnectBtn').textContent = text;
     }
 
+    // Restore wallet from localStorage
+    async function restoreWallet() {
+      const saved = localStorage.getItem('connectedWallet');
+      if (saved && window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          if (accounts[0]?.toLowerCase() === saved.toLowerCase()) {
+            address = accounts[0];
+            updateConnectButtons(address.slice(0, 6) + '...' + address.slice(-4));
+          }
+        } catch (e) { console.error(e); }
+      }
+    }
+    restoreWallet();
+
     // Tab switching
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
@@ -520,6 +535,7 @@ data:image/png;base64,iVBORw0KGgo..."></textarea>
       try {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         address = accounts[0];
+        localStorage.setItem('connectedWallet', address);
 
         try {
           await window.ethereum.request({

@@ -307,6 +307,29 @@
     const urlParams = new URLSearchParams(window.location.search);
     const nameParam = urlParams.get('name');
 
+    // Restore wallet from localStorage
+    async function restoreWallet() {
+      const saved = localStorage.getItem('connectedWallet');
+      if (saved && window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          if (accounts[0]?.toLowerCase() === saved.toLowerCase()) {
+            wallet = accounts[0].toLowerCase();
+            const btn = document.getElementById('connectBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Scanning...';
+            await scanForNames();
+            if (nameParam && ownedNames.find(n => n.name.toLowerCase() === nameParam.toLowerCase())) {
+              selectName(nameParam);
+            }
+            btn.disabled = false;
+            btn.textContent = 'Connect Wallet';
+          }
+        } catch (e) { console.error(e); }
+      }
+    }
+    restoreWallet();
+
     // Connect wallet
     document.getElementById('connectBtn').addEventListener('click', connectWallet);
 
@@ -323,6 +346,7 @@
       try {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         wallet = accounts[0].toLowerCase();
+        localStorage.setItem('connectedWallet', wallet);
 
         // Switch to Base
         try {
