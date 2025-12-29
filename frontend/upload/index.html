@@ -362,7 +362,7 @@
 
     async function scanForNames() {
       try {
-        // Fetch all names with pagination
+        // Fetch all inscriptions with pagination
         let allEthscriptions = [];
         let offset = 0;
         const limit = 100;
@@ -384,14 +384,32 @@
           }
         }
 
-        ownedNames = allEthscriptions
-          .filter(e => e.content_uri?.startsWith('data:,'))
-          .map(e => ({
-            name: e.content_uri.replace('data:,', ''),
-            txHash: e.creation_tx,
-            block: e.creation_block
-          }))
-          .filter(n => /^[a-z0-9-]+$/.test(n.name) && n.name.length <= 32);
+        // Filter to text/plain (potential names) and fetch content from chain
+        const textPlain = allEthscriptions.filter(e => e.content_type === 'text/plain');
+        document.getElementById('nameCount').textContent = `Checking ${textPlain.length} inscriptions...`;
+
+        ownedNames = [];
+        for (const e of textPlain) {
+          try {
+            // Fetch content from chain via API
+            const contentRes = await fetch(`${API_BASE}/content/${e.creation_tx}`);
+            const content = await contentRes.text();
+
+            // Check if it's a name (data:,name format)
+            if (content.startsWith('data:,')) {
+              const name = content.replace('data:,', '');
+              if (/^[a-z0-9-]+$/.test(name) && name.length <= 32) {
+                ownedNames.push({
+                  name: name,
+                  txHash: e.creation_tx,
+                  block: e.creation_block
+                });
+              }
+            }
+          } catch (err) {
+            console.error('Error fetching content:', err);
+          }
+        }
 
         renderNameList();
         document.getElementById('nameSelectCard').classList.remove('hidden');
@@ -510,12 +528,48 @@
       document.getElementById(actionsId).classList.add('hidden');
     }
 
+    // Ensure we're on Base before any transaction
+    async function ensureBaseChain() {
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+      if (chainId !== BASE_CHAIN_ID) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: BASE_CHAIN_ID }]
+          });
+        } catch (e) {
+          if (e.code === 4902) {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: BASE_CHAIN_ID,
+                chainName: 'Base',
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                rpcUrls: ['https://mainnet.base.org'],
+                blockExplorerUrls: ['https://basescan.org']
+              }]
+            });
+          } else {
+            throw new Error('Please switch to Base network');
+          }
+        }
+        // Verify switch happened
+        const newChainId = await window.ethereum.request({ method: 'eth_chainId' });
+        if (newChainId !== BASE_CHAIN_ID) {
+          throw new Error('Please switch to Base network to continue');
+        }
+      }
+    }
+
     async function inscribeFile(setFile, setTxHash, getTxHash, inputId, successId, actionsId) {
       const btn = document.getElementById(inputId + 'InscribeBtn');
       btn.disabled = true;
       btn.innerHTML = '<span class="loading"></span> Inscribing...';
 
       try {
+        // ALWAYS verify we're on Base before sending TX
+        await ensureBaseChain();
+
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         const file = inputId.includes('home') ? homeFile : aboutFile;
 
@@ -575,6 +629,9 @@
       btn.innerHTML = '<span class="loading"></span> Inscribing manifest...';
 
       try {
+        // ALWAYS verify we're on Base before sending TX
+        await ensureBaseChain();
+
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
 
         // Build manifest
@@ -607,7 +664,7 @@
         document.getElementById('manifestCard').classList.add('hidden');
         document.getElementById('finalSuccess').classList.remove('hidden');
         document.getElementById('manifestTx').textContent = tx;
-        document.getElementById('siteLink').href = `https://${selectedName}.basescriptions.com`;
+        document.getElementById('siteLink').href = `https://${selectedName}.basescriptions.com?manifest=${tx}`;
         document.getElementById('siteLink').textContent = `${selectedName}.basescriptions.com →`;
 
       } catch (e) {

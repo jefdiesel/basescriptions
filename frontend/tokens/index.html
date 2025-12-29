@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tokens | Basescriptions</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --bg2: #141414;
+      --bg3: #1a1a1a;
+      --border: #2a2a2a;
+      --text: #e0e0e0;
+      --text2: #888;
+      --accent: #0052FF;
+      --success: #30E000;
+      --danger: #ff4444;
+      --warning: #ffaa00;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .nav-links a {
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    h1 {
+      font-size: 2.5rem;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      text-align: center;
+      color: var(--text2);
+      margin-bottom: 40px;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+    }
+    .tab {
+      padding: 12px 24px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text2);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab:hover { background: var(--bg3); color: var(--text); }
+    .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Cards */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    .card h2 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card h2 .icon { font-size: 24px; }
+
+    /* Form elements */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 16px;
+      color: var(--text);
+      outline: none;
+    }
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--accent);
+    }
+    .form-group .hint {
+      font-size: 12px;
+      color: var(--text2);
+      margin-top: 6px;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* Preview */
+    .preview {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .preview-label {
+      font-size: 12px;
+      color: var(--text2);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .preview-content {
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--accent);
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-success { background: var(--success); color: #000; }
+    .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+
+    /* Token list */
+    .token-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .token-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .token-item:hover { border-color: var(--accent); }
+    .token-item.selected { border-color: var(--success); background: rgba(48, 224, 0, 0.05); }
+    .token-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .token-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent), #7c3aed);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .token-name {
+      font-weight: 600;
+      font-size: 16px;
+    }
+    .token-ticker {
+      color: var(--text2);
+      font-size: 14px;
+    }
+    .token-stats {
+      text-align: right;
+    }
+    .token-progress {
+      font-size: 14px;
+      color: var(--success);
+    }
+    .token-supply {
+      font-size: 12px;
+      color: var(--text2);
+    }
+
+    /* Progress bar */
+    .progress-bar {
+      height: 8px;
+      background: var(--bg);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--success), var(--accent));
+      transition: width 0.3s;
+    }
+
+    /* Status */
+    .status-box {
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .status-box.success {
+      background: rgba(48, 224, 0, 0.1);
+      border: 1px solid var(--success);
+    }
+    .status-box.error {
+      background: rgba(255, 68, 68, 0.1);
+      border: 1px solid var(--danger);
+    }
+    .status-box h3 { margin-bottom: 8px; }
+    .status-box p { font-size: 14px; color: var(--text2); }
+    .status-box code {
+      display: block;
+      background: var(--bg);
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      margin: 12px 0;
+      word-break: break-all;
+    }
+    .status-box a { color: var(--accent); }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text2);
+    }
+    .empty-state h3 { color: var(--text); margin-bottom: 8px; }
+
+    /* Hamburger */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+    }
+    .hamburger span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: var(--text);
+    }
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg);
+      z-index: 100;
+      flex-direction: column;
+      padding: 80px 24px;
+    }
+    .mobile-nav.active { display: flex; }
+    .mobile-nav a {
+      display: block;
+      padding: 16px 0;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 20px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 16px; }
+      h1 { font-size: 1.8rem; }
+      .tabs { flex-wrap: wrap; }
+      .tab { flex: 1; min-width: 100px; text-align: center; padding: 10px 16px; }
+      .form-row { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="logo">
+        <div class="logo-icon">B</div>
+        <span>Basescriptions</span>
+      </a>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/register/">Register</a>
+        <a href="/inscribe/">Inscribe</a>
+        <a href="/tokens/">Tokens</a>
+      </div>
+      <button class="hamburger" id="hamburger">
+        <span></span><span></span><span></span>
+      </button>
+    </header>
+
+    <div class="mobile-nav" id="mobileNav">
+      <a href="/">Home</a>
+      <a href="/register/">Register</a>
+      <a href="/inscribe/">Inscribe</a>
+      <a href="/tokens/">Tokens</a>
+    </div>
+
+    <h1>Tokens</h1>
+    <p class="subtitle">Deploy and mint fixed-denomination tokens on Base</p>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="browse">Browse</button>
+      <button class="tab" data-tab="deploy">Deploy</button>
+      <button class="tab" data-tab="mint">Mint</button>
+      <button class="tab" data-tab="wallet">Wallet</button>
+    </div>
+
+    <!-- Browse Tab -->
+    <div class="tab-content active" id="tab-browse">
+      <div class="card">
+        <h2><span class="icon">📊</span> Live Tokens</h2>
+        <div id="tokenList" class="token-list">
+          <div class="empty-state">
+            <span class="loading"></span>
+            <p style="margin-top: 12px;">Loading tokens...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deploy Tab -->
+    <div class="tab-content" id="tab-deploy">
+      <div class="card">
+        <h2><span class="icon">🚀</span> Deploy New Token</h2>
+
+        <div class="form-group">
+          <label>Token Symbol (tick)</label>
+          <input type="text" id="deployTick" placeholder="mytoken" maxlength="28" />
+          <p class="hint">Lowercase, alphanumeric, max 28 characters. If this name is registered, you must own it to deploy.</p>
+          <div id="nameStatus" style="margin-top: 8px; display: none;"></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Max Supply</label>
+            <input type="number" id="deployMax" placeholder="1000000" />
+            <p class="hint">Total tokens that can ever exist</p>
+          </div>
+          <div class="form-group">
+            <label>Denomination (per mint)</label>
+            <input type="number" id="deployLim" placeholder="1000" />
+            <p class="hint">Tokens per note. Must divide max evenly.</p>
+          </div>
+        </div>
+
+        <div class="preview">
+          <div class="preview-label">Inscription Preview</div>
+          <div class="preview-content" id="deployPreview">Enter token details above...</div>
+        </div>
+
+        <div id="deployStatus"></div>
+
+        <button class="btn btn-primary" id="deployBtn">Deploy Token</button>
+      </div>
+    </div>
+
+    <!-- Mint Tab -->
+    <div class="tab-content" id="tab-mint">
+      <div class="card">
+        <h2><span class="icon">⛏️</span> Mint Tokens</h2>
+
+        <div class="form-group">
+          <label>Select Token</label>
+          <div id="mintTokenList" class="token-list" style="max-height: 300px; overflow-y: auto;">
+            <div class="empty-state">
+              <span class="loading"></span>
+            </div>
+          </div>
+        </div>
+
+        <div id="selectedTokenInfo" style="display: none;">
+          <div class="preview">
+            <div class="preview-label">Minting</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 24px; font-weight: bold;" id="mintAmount">1,000</div>
+                <div style="color: var(--text2); font-size: 14px;" id="mintTicker">$TOKEN</div>
+              </div>
+              <div style="text-align: right;">
+                <div style="color: var(--text2); font-size: 12px;">Progress</div>
+                <div style="font-size: 16px; color: var(--success);" id="mintProgress">0%</div>
+              </div>
+            </div>
+            <div class="progress-bar" style="margin-top: 12px;">
+              <div class="progress-fill" id="mintProgressBar" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="preview">
+            <div class="preview-label">Inscription Preview</div>
+            <div class="preview-content" id="mintPreview"></div>
+          </div>
+
+          <div id="mintStatus"></div>
+
+          <button class="btn btn-success" id="mintBtn">Mint Note</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wallet Tab -->
+    <div class="tab-content" id="tab-wallet">
+      <div class="card">
+        <h2><span class="icon">💼</span> Your Token Notes</h2>
+        <div id="walletConnect" style="text-align: center; padding: 20px;">
+          <button class="btn btn-primary" id="connectWalletBtn" style="max-width: 300px;">Connect Wallet</button>
+        </div>
+        <div id="walletNotes" style="display: none;">
+          <div id="notesList" class="token-list"></div>
+        </div>
+      </div>
+
+      <div class="card" id="transferCard" style="display: none;">
+        <h2><span class="icon">📤</span> Transfer Note</h2>
+        <div id="transferNoteInfo" style="margin-bottom: 16px;"></div>
+        <div class="form-group">
+          <label>Recipient Address</label>
+          <input type="text" id="transferTo" placeholder="0x..." />
+          <p class="hint">The address to send this note to</p>
+        </div>
+        <div id="transferStatus"></div>
+        <button class="btn btn-primary" id="transferBtn">Transfer</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://basescriptions-api.wrapit.workers.dev';
+    const BASE_CHAIN_ID = '0x2105';
+
+    let tokens = [];
+    let selectedToken = null;
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Load tokens
+    async function loadTokens() {
+      try {
+        const res = await fetch(`${API_BASE}/tokens`);
+        const data = await res.json();
+        tokens = data.tokens || [];
+        renderTokenList();
+        renderMintList();
+      } catch (e) {
+        console.error('Error loading tokens:', e);
+        document.getElementById('tokenList').innerHTML = `
+          <div class="empty-state">
+            <h3>No tokens yet</h3>
+            <p>Be the first to deploy a token!</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderTokenList() {
+      const list = document.getElementById('tokenList');
+      if (!tokens.length) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <h3>No tokens yet</h3>
+            <p>Be the first to deploy a token!</p>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = tokens.map(t => `
+        <div class="token-item" onclick="viewToken('${t.tick}')">
+          <div class="token-info">
+            <div class="token-icon">${t.tick.slice(0, 2).toUpperCase()}</div>
+            <div>
+              <div class="token-name">$${t.tick.toUpperCase()}</div>
+              <div class="token-ticker">${Number(t.denomination).toLocaleString()} per note</div>
+            </div>
+          </div>
+          <div class="token-stats">
+            <div class="token-progress">${t.progress}% minted</div>
+            <div class="token-supply">${Number(t.minted).toLocaleString()} / ${Number(t.max_supply).toLocaleString()}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderMintList() {
+      const list = document.getElementById('mintTokenList');
+      const mintable = tokens.filter(t => Number(t.minted) < Number(t.max_supply));
+
+      if (!mintable.length) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <h3>No mintable tokens</h3>
+            <p>Deploy a token first, or wait for one with available supply.</p>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = mintable.map(t => `
+        <div class="token-item ${selectedToken?.tick === t.tick ? 'selected' : ''}" onclick="selectToken('${t.tick}')">
+          <div class="token-info">
+            <div class="token-icon">${t.tick.slice(0, 2).toUpperCase()}</div>
+            <div>
+              <div class="token-name">$${t.tick.toUpperCase()}</div>
+              <div class="token-ticker">${Number(t.denomination).toLocaleString()} per mint</div>
+            </div>
+          </div>
+          <div class="token-stats">
+            <div class="token-progress" style="color: ${parseFloat(t.progress) >= 100 ? 'var(--danger)' : 'var(--success)'}">
+              ${parseFloat(t.progress) >= 100 ? 'SOLD OUT' : t.progress + '% minted'}
+            </div>
+            <div class="token-supply">${(Number(t.max_supply) - Number(t.minted)).toLocaleString()} remaining</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function selectToken(tick) {
+      selectedToken = tokens.find(t => t.tick === tick);
+      renderMintList();
+
+      if (selectedToken) {
+        document.getElementById('selectedTokenInfo').style.display = 'block';
+        document.getElementById('mintAmount').textContent = Number(selectedToken.denomination).toLocaleString();
+        document.getElementById('mintTicker').textContent = '$' + selectedToken.tick.toUpperCase();
+        document.getElementById('mintProgress').textContent = selectedToken.progress + '%';
+        document.getElementById('mintProgressBar').style.width = selectedToken.progress + '%';
+        document.getElementById('mintPreview').textContent = JSON.stringify({
+          p: 'erc-20-fixed-denomination',
+          op: 'mint',
+          tick: selectedToken.tick
+        }, null, 2);
+      }
+    }
+
+    function viewToken(tick) {
+      // Could open a modal or navigate to token detail page
+      alert(`Token: $${tick.toUpperCase()}\n\nClick the Mint tab to mint this token.`);
+    }
+
+    // Deploy preview
+    const deployTick = document.getElementById('deployTick');
+    const deployMax = document.getElementById('deployMax');
+    const deployLim = document.getElementById('deployLim');
+    const deployPreview = document.getElementById('deployPreview');
+    const nameStatus = document.getElementById('nameStatus');
+
+    let nameCheckTimeout = null;
+    let canDeploy = true;
+    let connectedAccount = null;
+
+    function updateDeployPreview() {
+      const tick = deployTick.value.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const max = deployMax.value;
+      const lim = deployLim.value;
+
+      if (!tick || !max || !lim) {
+        deployPreview.textContent = 'Enter token details above...';
+        return;
+      }
+
+      const json = { p: 'erc-20-fixed-denomination', op: 'deploy', tick, max, lim };
+      deployPreview.textContent = JSON.stringify(json, null, 2);
+    }
+
+    async function checkNameOwnership(tick) {
+      if (!tick) {
+        nameStatus.style.display = 'none';
+        canDeploy = true;
+        return;
+      }
+
+      nameStatus.style.display = 'block';
+      nameStatus.innerHTML = '<span class="loading" style="width:14px;height:14px;"></span> Checking name...';
+
+      try {
+        // Get connected account
+        if (window.ethereum) {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          connectedAccount = accounts?.[0]?.toLowerCase();
+        }
+
+        const res = await fetch(`${API_BASE}/name/${tick}`);
+        const data = await res.json();
+
+        if (data.available) {
+          // Name not registered - anyone can deploy
+          nameStatus.innerHTML = `
+            <div style="padding: 10px; background: rgba(48, 224, 0, 0.1); border: 1px solid var(--success); border-radius: 8px; font-size: 13px;">
+              <span style="color: var(--success); font-weight: 600;">Open ticker</span>
+              <span style="color: var(--text2);"> — Name "${tick}" is not registered. Anyone can deploy this token.</span>
+              <a href="/register/?name=${tick}" style="color: var(--accent); margin-left: 8px;">Register it first →</a>
+            </div>
+          `;
+          canDeploy = true;
+        } else if (connectedAccount && data.owner === connectedAccount) {
+          // User owns this name
+          nameStatus.innerHTML = `
+            <div style="padding: 10px; background: rgba(48, 224, 0, 0.1); border: 1px solid var(--success); border-radius: 8px; font-size: 13px;">
+              <span style="color: var(--success); font-weight: 600;">You own "${tick}"</span>
+              <span style="color: var(--text2);"> — You can deploy a token with this ticker.</span>
+            </div>
+          `;
+          canDeploy = true;
+        } else {
+          // Someone else owns this name
+          const ownerShort = data.owner.slice(0, 6) + '...' + data.owner.slice(-4);
+          nameStatus.innerHTML = `
+            <div style="padding: 10px; background: rgba(255, 68, 68, 0.1); border: 1px solid var(--danger); border-radius: 8px; font-size: 13px;">
+              <span style="color: var(--danger); font-weight: 600;">Name taken</span>
+              <span style="color: var(--text2);"> — "${tick}" is owned by </span>
+              <a href="/address/${data.owner}" style="color: var(--accent);">${ownerShort}</a>
+              <span style="color: var(--text2);">. You cannot deploy this token.</span>
+            </div>
+          `;
+          canDeploy = false;
+        }
+      } catch (e) {
+        nameStatus.innerHTML = `
+          <div style="padding: 10px; background: rgba(255, 170, 0, 0.1); border: 1px solid var(--warning); border-radius: 8px; font-size: 13px;">
+            <span style="color: var(--warning);">Could not check name availability</span>
+          </div>
+        `;
+        canDeploy = true; // Allow attempt, API will reject if needed
+      }
+    }
+
+    deployTick.addEventListener('input', (e) => {
+      e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '');
+      updateDeployPreview();
+
+      // Debounce name check
+      clearTimeout(nameCheckTimeout);
+      const tick = e.target.value;
+      if (tick) {
+        nameCheckTimeout = setTimeout(() => checkNameOwnership(tick), 300);
+      } else {
+        nameStatus.style.display = 'none';
+        canDeploy = true;
+      }
+    });
+    deployMax.addEventListener('input', updateDeployPreview);
+    deployLim.addEventListener('input', updateDeployPreview);
+
+    // Connect wallet helper
+    async function connectAndGetAccount() {
+      if (!window.ethereum) {
+        throw new Error('Please install MetaMask or another Web3 wallet');
+      }
+
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      if (!accounts?.[0]) throw new Error('No account connected');
+
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+      if (chainId !== BASE_CHAIN_ID) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: BASE_CHAIN_ID }]
+          });
+        } catch (e) {
+          if (e.code === 4902) {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: BASE_CHAIN_ID,
+                chainName: 'Base',
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                rpcUrls: ['https://mainnet.base.org'],
+                blockExplorerUrls: ['https://basescan.org']
+              }]
+            });
+          } else throw e;
+        }
+        await new Promise(r => setTimeout(r, 500));
+      }
+
+      return accounts[0];
+    }
+
+    // Deploy token
+    document.getElementById('deployBtn').addEventListener('click', async () => {
+      const tick = deployTick.value.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const max = deployMax.value;
+      const lim = deployLim.value;
+      const btn = document.getElementById('deployBtn');
+      const status = document.getElementById('deployStatus');
+
+      if (!tick || tick.length > 28) {
+        status.innerHTML = '<div class="status-box error"><p>Invalid ticker (1-28 lowercase alphanumeric)</p></div>';
+        return;
+      }
+      if (!canDeploy) {
+        status.innerHTML = '<div class="status-box error"><p>You don\'t own the name "${tick}". Register it first or choose a different ticker.</p></div>';
+        return;
+      }
+      if (!max || !lim || Number(max) <= 0 || Number(lim) <= 0) {
+        status.innerHTML = '<div class="status-box error"><p>Invalid supply or denomination</p></div>';
+        return;
+      }
+      if (Number(max) % Number(lim) !== 0) {
+        status.innerHTML = '<div class="status-box error"><p>Max supply must be divisible by denomination</p></div>';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span> Connecting...';
+      status.innerHTML = '';
+
+      try {
+        const account = await connectAndGetAccount();
+
+        btn.innerHTML = '<span class="loading"></span> Confirm in wallet...';
+
+        const json = { p: 'erc-20-fixed-denomination', op: 'deploy', tick, max, lim };
+        const content = 'data:application/json,' + encodeURIComponent(JSON.stringify(json));
+        const hex = '0x' + Array.from(new TextEncoder().encode(content))
+          .map(b => b.toString(16).padStart(2, '0')).join('');
+
+        const tx = await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{ from: account, to: account, data: hex, value: '0x0' }]
+        });
+
+        // Register immediately
+        try {
+          await fetch(`${API_BASE}/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content, creator: account, tx_hash: tx })
+          });
+        } catch (e) { console.log('DB register:', e); }
+
+        status.innerHTML = `
+          <div class="status-box success">
+            <h3 style="color: var(--success)">✓ $${tick.toUpperCase()} deployed!</h3>
+            <code>${tx}</code>
+            <p><a href="https://basescan.org/tx/${tx}" target="_blank">View on BaseScan →</a></p>
+          </div>
+        `;
+
+        // Clear form
+        deployTick.value = '';
+        deployMax.value = '';
+        deployLim.value = '';
+        updateDeployPreview();
+
+        // Reload tokens after a delay
+        setTimeout(loadTokens, 3000);
+
+      } catch (e) {
+        console.error('Deploy error:', e);
+        status.innerHTML = `<div class="status-box error"><p>Error: ${e.message}</p></div>`;
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Deploy Token';
+    });
+
+    // Mint token
+    document.getElementById('mintBtn').addEventListener('click', async () => {
+      if (!selectedToken) return;
+
+      const btn = document.getElementById('mintBtn');
+      const status = document.getElementById('mintStatus');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span> Connecting...';
+      status.innerHTML = '';
+
+      try {
+        const account = await connectAndGetAccount();
+
+        btn.innerHTML = '<span class="loading"></span> Confirm in wallet...';
+
+        const json = { p: 'erc-20-fixed-denomination', op: 'mint', tick: selectedToken.tick };
+        const content = 'data:application/json,' + encodeURIComponent(JSON.stringify(json));
+        const hex = '0x' + Array.from(new TextEncoder().encode(content))
+          .map(b => b.toString(16).padStart(2, '0')).join('');
+
+        const tx = await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{ from: account, to: account, data: hex, value: '0x0' }]
+        });
+
+        // Register immediately
+        try {
+          await fetch(`${API_BASE}/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content, creator: account, tx_hash: tx })
+          });
+        } catch (e) { console.log('DB register:', e); }
+
+        status.innerHTML = `
+          <div class="status-box success">
+            <h3 style="color: var(--success)">✓ Minted ${Number(selectedToken.denomination).toLocaleString()} $${selectedToken.tick.toUpperCase()}!</h3>
+            <code>${tx}</code>
+            <p><a href="https://basescan.org/tx/${tx}" target="_blank">View on BaseScan →</a></p>
+          </div>
+        `;
+
+        // Reload tokens after a delay
+        setTimeout(loadTokens, 3000);
+
+      } catch (e) {
+        console.error('Mint error:', e);
+        status.innerHTML = `<div class="status-box error"><p>Error: ${e.message}</p></div>`;
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Mint Note';
+    });
+
+    // Hamburger menu
+    document.getElementById('hamburger').addEventListener('click', () => {
+      document.getElementById('hamburger').classList.toggle('active');
+      document.getElementById('mobileNav').classList.toggle('active');
+    });
+
+    // ========== WALLET FUNCTIONALITY ==========
+    let walletAddress = null;
+    let userNotes = [];
+    let selectedNote = null;
+
+    // Connect wallet button
+    document.getElementById('connectWalletBtn').addEventListener('click', async () => {
+      try {
+        walletAddress = await connectAndGetAccount();
+        document.getElementById('walletConnect').style.display = 'none';
+        document.getElementById('walletNotes').style.display = 'block';
+        loadUserNotes();
+      } catch (e) {
+        alert('Failed to connect: ' + e.message);
+      }
+    });
+
+    // Load user's token notes
+    async function loadUserNotes() {
+      const list = document.getElementById('notesList');
+      list.innerHTML = '<div class="empty-state"><span class="loading"></span></div>';
+
+      try {
+        // Get all owned ethscriptions and filter for token notes
+        const res = await fetch(`${API_BASE}/owned/${walletAddress}?limit=500`);
+        const data = await res.json();
+
+        // Filter for token notes (application/json with mint op)
+        userNotes = [];
+        for (const e of data.ethscriptions || []) {
+          if (e.content_type === 'application/json') {
+            try {
+              // Check if it's a mint note by looking at token_notes table via the token endpoint
+              for (const token of tokens) {
+                const notesRes = await fetch(`${API_BASE}/tokens/${token.tick}/notes?owner=${walletAddress}`);
+                const notesData = await notesRes.json();
+                for (const note of notesData.notes || []) {
+                  if (!userNotes.find(n => n.ethscription_id === note.ethscription_id)) {
+                    userNotes.push({
+                      ...note,
+                      token: token
+                    });
+                  }
+                }
+              }
+              break; // Only need to do this once
+            } catch (err) {}
+          }
+        }
+
+        // Simpler approach: just fetch notes for each token
+        userNotes = [];
+        for (const token of tokens) {
+          try {
+            const notesRes = await fetch(`${API_BASE}/tokens/${token.tick}/notes?owner=${walletAddress}`);
+            const notesData = await notesRes.json();
+            for (const note of notesData.notes || []) {
+              userNotes.push({ ...note, token });
+            }
+          } catch (err) {}
+        }
+
+        renderUserNotes();
+      } catch (e) {
+        list.innerHTML = '<div class="empty-state"><p>Error loading notes</p></div>';
+      }
+    }
+
+    function renderUserNotes() {
+      const list = document.getElementById('notesList');
+
+      if (!userNotes.length) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <h3>No token notes</h3>
+            <p>Mint some tokens to see them here!</p>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = userNotes.map((note, idx) => `
+        <div class="token-item ${selectedNote?.ethscription_id === note.ethscription_id ? 'selected' : ''}" onclick="selectNote(${idx})">
+          <div class="token-info">
+            <div class="token-icon">${note.tick.slice(0, 2).toUpperCase()}</div>
+            <div>
+              <div class="token-name">${Number(note.amount).toLocaleString()} $${note.tick.toUpperCase()}</div>
+              <div class="token-ticker">Note #${note.note_id}</div>
+            </div>
+          </div>
+          <div class="token-stats">
+            <div style="font-size: 12px; color: var(--text2);">${note.ethscription_id.slice(0, 10)}...</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function selectNote(idx) {
+      selectedNote = userNotes[idx];
+      renderUserNotes();
+
+      // Show transfer card
+      document.getElementById('transferCard').style.display = 'block';
+      document.getElementById('transferNoteInfo').innerHTML = `
+        <div style="padding: 12px; background: var(--bg); border-radius: 8px;">
+          <div style="font-size: 20px; font-weight: bold;">${Number(selectedNote.amount).toLocaleString()} $${selectedNote.tick.toUpperCase()}</div>
+          <div style="font-size: 12px; color: var(--text2); margin-top: 4px;">Note #${selectedNote.note_id} • ${selectedNote.ethscription_id.slice(0, 20)}...</div>
+        </div>
+      `;
+      document.getElementById('transferTo').value = '';
+      document.getElementById('transferStatus').innerHTML = '';
+    }
+
+    // Transfer note
+    document.getElementById('transferBtn').addEventListener('click', async () => {
+      if (!selectedNote) return;
+
+      const to = document.getElementById('transferTo').value.trim();
+      const btn = document.getElementById('transferBtn');
+      const status = document.getElementById('transferStatus');
+
+      if (!to || !/^0x[a-fA-F0-9]{40}$/.test(to)) {
+        status.innerHTML = '<div class="status-box error"><p>Invalid address</p></div>';
+        return;
+      }
+
+      if (to.toLowerCase() === walletAddress.toLowerCase()) {
+        status.innerHTML = '<div class="status-box error"><p>Cannot transfer to yourself</p></div>';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span> Confirm in wallet...';
+      status.innerHTML = '';
+
+      try {
+        // Transfer is done by sending the ethscription hash as calldata to recipient
+        const hash = selectedNote.ethscription_id;
+        const tx = await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: walletAddress,
+            to: to,
+            data: hash,
+            value: '0x0'
+          }]
+        });
+
+        // Record transfer in API
+        try {
+          await fetch(`${API_BASE}/transfer`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              hash: hash,
+              from: walletAddress,
+              to: to,
+              tx_hash: tx
+            })
+          });
+        } catch (e) { console.log('API transfer record:', e); }
+
+        status.innerHTML = `
+          <div class="status-box success">
+            <h3 style="color: var(--success)">✓ Transferred!</h3>
+            <p>${Number(selectedNote.amount).toLocaleString()} $${selectedNote.tick.toUpperCase()} sent to ${to.slice(0, 10)}...</p>
+            <code>${tx}</code>
+            <p><a href="https://basescan.org/tx/${tx}" target="_blank">View on BaseScan →</a></p>
+          </div>
+        `;
+
+        // Reset and reload
+        selectedNote = null;
+        document.getElementById('transferCard').style.display = 'none';
+        setTimeout(loadUserNotes, 2000);
+
+      } catch (e) {
+        console.error('Transfer error:', e);
+        status.innerHTML = `<div class="status-box error"><p>Error: ${e.message}</p></div>`;
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Transfer';
+    });
+
+    // Load on start
+    loadTokens();
+  </script>
+</body>
+</html>

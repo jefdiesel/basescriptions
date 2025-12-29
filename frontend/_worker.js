@@ -7,7 +7,7 @@ export default {
     const path = url.pathname;
 
     // Try to serve static assets first
-    const staticPaths = ['/', '/index.html', '/register/', '/upload/', '/inscribe/', '/item/', '/address/', '/marketplace/', '/marketplace/sell/'];
+    const staticPaths = ['/', '/index.html', '/register/', '/upload/', '/inscribe/', '/tokens/', '/item/', '/address/', '/marketplace/', '/marketplace/sell/', '/collections/'];
     if (staticPaths.includes(path) || path.includes('.')) {
       const response = await env.ASSETS.fetch(request);
       if (response.status !== 404) {
@@ -77,7 +77,10 @@ async function serveAsset(env, request, assetPath) {
   const html = await response.text();
   return new Response(html, {
     status: 200,
-    headers: { 'Content-Type': 'text/html; charset=utf-8' }
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, max-age=0, must-revalidate'
+    }
   });
 }
 

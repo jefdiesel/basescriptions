@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inscription | Basescriptions</title>
+  <title>Inscription | Basescriptions</title><!-- v2 -->
   <style>
     :root {
       --bg: #0a0a0a;
@@ -433,9 +433,10 @@
       try {
         let res = await fetch(`${API_BASE}/hash/${id}`);
         let data = await res.json();
+        let chainData = null;
 
         if (data.error) {
-          // Try as transaction hash
+          // Try as transaction hash - fetch from chain
           const rpcRes = await fetch('https://mainnet.base.org', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -447,31 +448,45 @@
           });
           const rpcData = await rpcRes.json();
           if (rpcData.result) {
+            chainData = rpcData.result;
             const hash = await sha256(rpcData.result.input.toLowerCase());
             res = await fetch(`${API_BASE}/hash/${hash}`);
             data = await res.json();
           }
         }
 
-        if (data.error) {
+        // If API still doesn't have it but we have chain data, render from chain
+        if (data.error && chainData) {
+          const contentUri = parseCalldata(chainData.input);
+          const hash = await sha256(chainData.input.toLowerCase());
+          data = {
+            id: hash,
+            content_uri: contentUri,
+            creation_tx: id,
+            creator: chainData.from,
+            current_owner: chainData.to || chainData.from,
+            creation_block: parseInt(chainData.blockNumber, 16),
+            content_type: contentUri.match(/^data:([^;,]+)/)?.[1] || 'text/plain'
+          };
+        } else if (data.error) {
           document.getElementById('content').innerHTML = '<div class="error">Inscription not found</div>';
           return;
-        }
-
-        // Fetch full calldata from chain (database may truncate)
-        if (data.creation_tx) {
-          const rpcRes = await fetch('https://mainnet.base.org', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              jsonrpc: '2.0', id: 1,
-              method: 'eth_getTransactionByHash',
-              params: [data.creation_tx]
-            })
-          });
-          const rpcData = await rpcRes.json();
-          if (rpcData.result && rpcData.result.input) {
-            data.content_uri = parseCalldata(rpcData.result.input);
+        } else {
+          // Fetch full calldata from chain (database may truncate)
+          if (data.creation_tx) {
+            const rpcRes = await fetch('https://mainnet.base.org', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                jsonrpc: '2.0', id: 1,
+                method: 'eth_getTransactionByHash',
+                params: [data.creation_tx]
+              })
+            });
+            const rpcData = await rpcRes.json();
+            if (rpcData.result && rpcData.result.input) {
+              data.content_uri = parseCalldata(rpcData.result.input);
+            }
           }
         }
 
@@ -495,7 +510,7 @@
       const content = data.content_uri || '';
       const isName = content.startsWith('data:,') && /^[a-z0-9-]+$/.test(content.replace('data:,', ''));
       const nameText = content.replace(/^data:[^,]*,/, '');
-      const displayTitle = isName ? nameText : `Inscription #${data.inscription_number || '?'}`;
+      const displayTitle = isName ? nameText : `#${data.inscription_number || '?'}`;
       const created = timeAgo(data.creation_timestamp || data.created_at);
 
       document.title = `${displayTitle} | Basescriptions`;

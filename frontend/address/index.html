@@ -102,22 +102,28 @@
       padding: 16px;
       cursor: pointer;
       transition: border-color 0.2s;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
     }
     .item-card:hover { border-color: var(--accent); }
     .item-content {
-      font-size: 24px;
-      font-weight: bold;
-      margin-bottom: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      font-family: 'SF Mono', Monaco, 'Courier New', monospace;
       word-break: break-all;
-      color: var(--accent);
-    }
-    .item-image {
+      overflow-y: auto;
+      max-height: 100%;
       width: 100%;
-      aspect-ratio: 1;
-      object-fit: contain;
-      background: #1a1a1a;
-      border-radius: 8px;
-      margin-bottom: 8px;
+      line-height: 1.4;
+      text-align: center;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
     }
     .item-image.pixel-art {
       image-rendering: pixelated;
@@ -130,8 +136,13 @@
     .item-iframe {
       width: 100%;
       height: 100%;
+      min-height: 200px;
       border: none;
       pointer-events: none;
+    }
+    .item-image {
+      max-width: 100%;
+      max-height: 100%;
     }
     .item-meta {
       font-size: 12px;
@@ -407,39 +418,57 @@
             return;
           }
 
-          const cards = data.ethscriptions.map(e => {
-            const contentUri = e.content_uri || '';
-            const isImage = contentUri.startsWith('data:image/');
-            const isHtml = contentUri.startsWith('data:text/html');
+          const cards = await Promise.all(data.ethscriptions.map(async e => {
+            let contentUri = e.content_uri || '';
+            const contentType = e.content_type || '';
+
+            // Fetch content from chain if not stored in DB
+            if (!contentUri && e.creation_tx) {
+              try {
+                const rpcRes = await fetch('https://mainnet.base.org', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    jsonrpc: '2.0', id: 1,
+                    method: 'eth_getTransactionByHash',
+                    params: [e.creation_tx]
+                  })
+                });
+                const rpcData = await rpcRes.json();
+                if (rpcData.result && rpcData.result.input) {
+                  contentUri = parseCalldata(rpcData.result.input);
+                }
+              } catch (err) { console.error(err); }
+            }
+
+            const isImage = contentUri.startsWith('data:image/') || contentType.startsWith('image/');
+            const isHtml = contentUri.startsWith('data:text/html') || contentType === 'text/html';
             const isPixelArt = contentUri.includes('pixelart=1');
 
             if (isImage) {
               const pixelClass = isPixelArt ? 'pixel-art' : '';
               return `
                 <div class="item-card" onclick="window.location='/item/${e.id}'">
-                  <img src="${contentUri}" class="item-image ${pixelClass}" alt="Inscription" />
-                  <div class="item-meta">Block ${e.creation_block?.toLocaleString()}</div>
+                  <img src="${contentUri}" class="item-image ${pixelClass}" alt="Inscription" loading="lazy" />
                 </div>
               `;
             } else if (isHtml) {
               return `
                 <div class="item-card html-card" onclick="window.location='/item/${e.id}'">
-                  <iframe class="item-iframe" src="${contentUri}" sandbox="allow-scripts allow-same-origin"></iframe>
+                  <iframe class="item-iframe" src="${contentUri}" sandbox="allow-scripts allow-same-origin" loading="lazy"></iframe>
                 </div>
               `;
             } else {
               const content = contentUri.replace(/^data:[^,]*,/, '') || '';
-              const truncated = content.length > 30 ? content.slice(0, 30) + '...' : content;
               return `
                 <div class="item-card" onclick="window.location='/item/${e.id}'">
-                  <div class="item-content">${escapeHtml(truncated)}</div>
-                  <div class="item-meta">Block ${e.creation_block?.toLocaleString()}</div>
+                  <div class="item-content">${escapeHtml(content)}</div>
                 </div>
               `;
             }
-          }).join('');
+          }));
 
-          document.getElementById('grid').insertAdjacentHTML('beforeend', cards);
+          document.getElementById('grid').insertAdjacentHTML('beforeend', cards.join(''));
 
           currentOffset += data.ethscriptions.length;
 
@@ -456,6 +485,13 @@
 
         loadMoreEl.style.display = 'none';
         isLoading = false;
+      }
+
+      function parseCalldata(input) {
+        if (!input || input === '0x') return '';
+        const hex = input.startsWith('0x') ? input.slice(2) : input;
+        const bytes = new Uint8Array(hex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+        return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
       }
 
       function escapeHtml(text) {
